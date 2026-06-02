@@ -1,0 +1,6 @@
+{
+  "name": "Álbum de Figurinhas - Bora Brasil",
+  "description": "Um álbum de figurinhas interativo com flipbook em HTML5, efeito de abrir pacotinhos, sons imersivos e colagem magnética.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
