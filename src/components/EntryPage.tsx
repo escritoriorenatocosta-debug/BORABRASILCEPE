@@ -1,5 +1,5 @@
 import React from 'react';
-import { playPageFlip } from '../audio';
+import { playPageFlip, playComecou } from '../audio';
 import { ChevronRight, Play } from 'lucide-react';
 import DefaultTitleLogo from './DefaultTitleLogo';
 
@@ -20,7 +20,7 @@ export default function EntryPage({
 }: EntryPageProps) {
 
   const handleEnterClick = () => {
-    playPageFlip();
+    playComecou();
     onEnter();
   };
 

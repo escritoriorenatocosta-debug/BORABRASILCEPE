@@ -15,10 +15,11 @@ import AlbumIndex from './components/AlbumIndex';
 import PackManager from './components/PackManager';
 import EntryPage from './components/EntryPage';
 import LoadingScreen from './components/LoadingScreen';
+import IntroVideoScreen from './components/IntroVideoScreen';
 import StickerItem from './components/StickerItem';
 import { Sticker, UserSticker } from './types';
 import { STICKERS } from './data';
-import { playPageFlip, setSoundEnabled, playGoalCrowd } from './audio';
+import { playPageFlip, setSoundEnabled, playGoalCrowd, isMusicEnabled, setMusicEnabled, startBackgroundMusic, stopBackgroundMusic } from './audio';
 import { Sparkles, Trophy, HelpCircle, Gamepad2, Info, Play, Video, X, Award } from 'lucide-react';
 import AtivoImage from './assets/images/GOOOL.png';
 
@@ -89,6 +90,7 @@ export default function App() {
   const [dragOffset, setDragOffset] = useState({ x: 45, y: 70 });
   const [selectedStickerFromBench, setSelectedStickerFromBench] = useState<number | null>(null);
   const [soundOn, setSoundOn] = useState(true);
+  const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
   const [initialized, setInitialized] = useState(false);
   const [brandImage, setBrandImage] = useState<string | null>(null);
   const [coverBgImage, setCoverBgImage] = useState<string | null>('/src/assets/images/CAPA ALBUM_novo.png');
@@ -97,6 +99,7 @@ export default function App() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/b_9_k6_3Bws');
   const [isEnteringLoading, setIsEnteringLoading] = useState(false);
+  const [isWatchingIntro, setIsWatchingIntro] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [celebratedPage1, setCelebratedPage1] = useState(() => {
     try {
@@ -321,6 +324,20 @@ export default function App() {
     setSoundOn(enabled);
     setSoundEnabled(enabled);
   };
+
+  const handleToggleMusic = (enabled: boolean) => {
+    setMusicOn(enabled);
+    setMusicEnabled(enabled);
+  };
+
+  // Automated background music controller that fires once the user is initialized and enters the app
+  useEffect(() => {
+    if (entered && musicOn) {
+      startBackgroundMusic();
+    } else {
+      stopBackgroundMusic();
+    }
+  }, [entered, musicOn]);
 
   // Add newly drawn stickers from pack opening to inventory
   const handleAddStickers = (newStickers: Sticker[]) => {
@@ -553,11 +570,18 @@ export default function App() {
         {isEnteringLoading ? (
           <LoadingScreen
             onComplete={() => {
-              setEntered(true);
               setIsEnteringLoading(false);
+              setIsWatchingIntro(true);
             }}
             coverBgImage={coverBgImage}
             brandImage={brandImage}
+          />
+        ) : isWatchingIntro ? (
+          <IntroVideoScreen
+            onComplete={() => {
+              setIsWatchingIntro(false);
+              setEntered(true);
+            }}
           />
         ) : (
           <EntryPage
@@ -565,7 +589,6 @@ export default function App() {
             brandImage={brandImage}
             coverBgImage={coverBgImage}
             titleImage={titleImage}
-            onOpenVideo={() => setIsVideoOpen(true)}
           />
         )}
         {isVideoOpen && (
@@ -651,6 +674,8 @@ export default function App() {
         onReset={handleResetProgress}
         soundOn={soundOn}
         onToggleSound={handleToggleSound}
+        musicOn={musicOn}
+        onToggleMusic={handleToggleMusic}
         brandImage={brandImage}
         onBrandImageChange={handleBrandImageChange}
         coverBgImage={coverBgImage}

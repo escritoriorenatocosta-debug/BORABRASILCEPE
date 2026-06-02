@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Volume2, VolumeX, RotateCcw, Settings, X, Play, Upload, Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { Volume2, VolumeX, RotateCcw, Settings, X, Play, Upload, Download, ChevronUp, ChevronDown, Music } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled, playSuccess } from '../audio';
 import DefaultTitleLogo from './DefaultTitleLogo';
 
@@ -18,6 +18,8 @@ interface HeaderProps {
   onReset: () => void;
   soundOn: boolean;
   onToggleSound: (enabled: boolean) => void;
+  musicOn: boolean;
+  onToggleMusic: (enabled: boolean) => void;
   brandImage: string | null;
   onBrandImageChange: (image: string | null) => void;
   coverBgImage: string | null;
@@ -37,6 +39,8 @@ export default function Header({
   onReset,
   soundOn,
   onToggleSound,
+  musicOn,
+  onToggleMusic,
   brandImage,
   onBrandImageChange,
   coverBgImage,
@@ -308,6 +312,26 @@ export default function Header({
           />
 
           <div className="flex items-center gap-2 z-20 shrink-0">
+            {/* Background Music ON / OFF Control Button Pill */}
+            <div className="flex items-center bg-black rounded-full border border-white/30 overflow-hidden text-[10px] md:text-xs font-bold uppercase tracking-wider" style={{ backgroundColor: '#000000' }}>
+              <button
+                onClick={() => onToggleMusic && onToggleMusic(true)}
+                className={`px-2 md:px-3 py-1.5 flex items-center gap-1 cursor-pointer transition-all ${musicOn ? 'bg-[#FFDF1B] text-slate-950 font-black' : 'bg-transparent text-white hover:bg-white/10'}`}
+                title="Ativar música de fundo"
+              >
+                <Music className={`w-3 h-3 ${musicOn ? 'animate-pulse' : ''}`} />
+                <span>ON</span>
+              </button>
+              <div className="w-[1px] bg-white/20 self-stretch" />
+              <button
+                onClick={() => onToggleMusic && onToggleMusic(false)}
+                className={`px-2 md:px-3 py-1.5 flex items-center gap-1 cursor-pointer transition-all ${!musicOn ? 'bg-red-600 text-white font-black' : 'bg-transparent text-white hover:bg-white/10'}`}
+                title="Desativar música de fundo"
+              >
+                <span>OFF</span>
+              </button>
+            </div>
+
             <button
               onClick={() => {
                 const next = !soundOn;

@@ -4,6 +4,9 @@
  */
 
 let soundEnabled = true;
+let musicEnabled = true;
+let isMusicPlaying = false;
+let bgAudio: HTMLAudioElement | null = null;
 
 export function setSoundEnabled(enabled: boolean) {
   soundEnabled = enabled;
@@ -11,6 +14,65 @@ export function setSoundEnabled(enabled: boolean) {
 
 export function isSoundEnabled() {
   return soundEnabled;
+}
+
+export function isMusicEnabled() {
+  return musicEnabled;
+}
+
+export function setMusicEnabled(enabled: boolean) {
+  musicEnabled = enabled;
+  if (enabled) {
+    startBackgroundMusic();
+  } else {
+    stopBackgroundMusic();
+  }
+}
+
+export function toggleBackgroundMusic() {
+  setMusicEnabled(!musicEnabled);
+  return musicEnabled;
+}
+
+export function startBackgroundMusic() {
+  if (!musicEnabled) return;
+  if (isMusicPlaying) return;
+
+  try {
+    if (!bgAudio) {
+      bgAudio = new Audio('/music-menu.mp3');
+      bgAudio.loop = true;
+      bgAudio.volume = 0.28; // set appropriate background music balance
+    }
+    
+    isMusicPlaying = true;
+    const playPromise = bgAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn("Background music play was deferred or blocked by browser gesture protocols:", err);
+        const resumeOnGesture = () => {
+          if (isMusicPlaying && bgAudio) {
+            bgAudio.play().catch(_ => {});
+          }
+          window.removeEventListener('click', resumeOnGesture);
+          window.removeEventListener('touchend', resumeOnGesture);
+        };
+        window.addEventListener('click', resumeOnGesture);
+        window.addEventListener('touchend', resumeOnGesture);
+      });
+    }
+  } catch (err) {
+    console.warn('Could not start background music:', err);
+  }
+}
+
+export function stopBackgroundMusic() {
+  isMusicPlaying = false;
+  if (bgAudio) {
+    try {
+      bgAudio.pause();
+    } catch (_) {}
+  }
 }
 
 function getAudioContext(): AudioContext | null {
@@ -334,4 +396,18 @@ export function playGoalCrowd() {
     console.warn('Goal sound failure:', e);
   }
 }
+
+export function playComecou() {
+  if (!soundEnabled) return;
+  try {
+    const audio = new Audio('/comecou_i3D39Qk.mp3');
+    audio.volume = 0.65;
+    audio.play().catch(err => {
+      console.warn('Playback blocked or failed for comecou sound:', err);
+    });
+  } catch (e) {
+    console.warn('Failed to play comecou sound:', e);
+  }
+}
+
 
