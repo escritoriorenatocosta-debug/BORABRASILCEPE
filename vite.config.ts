@@ -10,7 +10,6 @@ export default defineConfig(() => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
-            base: '/BORABRASILCEPE/'
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
