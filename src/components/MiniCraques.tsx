@@ -22,8 +22,8 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
   const [countdown, setCountdown] = useState(3);
   const [justTransformedId, setJustTransformedId] = useState<number | null>(null);
 
-  // Filter player stickers 1 to 24 that the user has already obtained (status can be glued or inventory)
-  const availablePlayers = STICKERS.filter(s => s.id <= 24).filter(s => 
+  // Filter player stickers 1 to 36 that the user has already obtained (status can be glued or inventory)
+  const availablePlayers = STICKERS.filter(s => s.id <= 36).filter(s => 
     userStickers.some(u => u.stickerId === s.id)
   );
 
@@ -236,7 +236,7 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
                 style={{ fontFamily: 'system-ui', fontWeight: 'bold', color: '#ffffff' }}
                 className="text-purple-300 text-[11px] bg-purple-950/60 px-3 py-1 rounded-full border border-purple-900/30 font-mono font-bold"
               >
-                {availablePlayers.length}/24 Coletados
+                {availablePlayers.length}/36 Coletados
               </span>
             </div>
 
@@ -244,7 +244,7 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
               <div className="flex-1 flex flex-col items-center justify-center py-12 text-center text-slate-500">
                 <Lucide.FileQuestion className="w-12 h-12 text-purple-900 mb-2" />
                 <p className="text-purple-400 font-bold text-xs">Nenhuma fígurinha comum coletada ainda!</p>
-                <p className="text-purple-500/80 text-[11px] max-w-xs mt-1">Abra pacotes na página inicial para obter jogadores comuns (1 a 24) e depois transformá-los aqui.</p>
+                <p className="text-purple-500/80 text-[11px] max-w-xs mt-1">Abra pacotes na página inicial para obter jogadores comuns (1 a 36) e depois transformá-los aqui.</p>
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3.5 max-h-[380px] overflow-y-auto pr-1">

@@ -366,8 +366,8 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
     playTearPack();
 
     const selected: { sticker: Sticker; flipped: boolean }[] = [];
-    const unglued = STICKERS.filter(s => s.id <= 24 && !gluedStickerIds.includes(s.id));
-    const allPool = STICKERS.filter(s => s.id <= 24);
+    const unglued = STICKERS.filter(s => s.id <= 36 && !gluedStickerIds.includes(s.id));
+    const allPool = STICKERS.filter(s => s.id <= 36);
 
     for (let i = 0; i < 3; i++) {
       let chosen: Sticker;

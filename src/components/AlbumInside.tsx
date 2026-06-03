@@ -66,12 +66,13 @@ interface AlbumInsideProps {
   onUnglueSticker: (stickerId: number, slotId: string) => void;
   onPrevPage: () => void;
   onNextPage: () => void;
-  currentPageIndex: 0 | 1 | 2 | 3;
-  onPageIndexChange: (index: 0 | 1 | 2 | 3) => void;
+  currentPageIndex: number;
+  onPageIndexChange: (index: number) => void;
   onGoToMiniCraques?: () => void;
   onGoToBancada: () => void;
   initialSelectedStickerId?: number | null;
   onClearSelectedStickerFromBench?: () => void;
+  isVersoCompleted?: boolean;
 }
 
 export default function AlbumInside({
@@ -86,15 +87,18 @@ export default function AlbumInside({
   onGoToMiniCraques,
   onGoToBancada,
   initialSelectedStickerId,
-  onClearSelectedStickerFromBench
+  onClearSelectedStickerFromBench,
+  isVersoCompleted
 }: AlbumInsideProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getPageTitleLabel = (idx: number) => {
     if (idx === 0) return "CONVOCADOS 1";
     if (idx === 1) return "CONVOCADOS 2";
-    if (idx === 2) return "ESPECIAIS 1";
-    return "ESPECIAIS 2";
+    if (idx === 2) return "CONVOCADOS 3";
+    if (idx === 3) return "ESPECIAIS 1";
+    if (idx === 4) return "ESPECIAIS 2";
+    return "ESPECIAIS 3";
   };
 
   // States for interaction and exports
@@ -229,11 +233,19 @@ export default function AlbumInside({
     return userStickers.some(u => u.status === 'glued' && u.slotId === `BRA_${idx}`);
   });
 
-  const isPage3Completed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].every(idx => {
+  const isPage3Completed = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35].every(idx => {
+    return userStickers.some(u => u.status === 'glued' && u.slotId === `BRA_${idx}`);
+  });
+
+  const isPage4Completed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].every(idx => {
     return userStickers.some(u => u.status === 'glued' && u.slotId === `MC_${idx}`);
   });
 
-  const isPage4Completed = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].every(idx => {
+  const isPage5Completed = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].every(idx => {
+    return userStickers.some(u => u.status === 'glued' && u.slotId === `MC_${idx}`);
+  });
+
+  const isPage6Completed = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35].every(idx => {
     return userStickers.some(u => u.status === 'glued' && u.slotId === `MC_${idx}`);
   });
 
@@ -244,9 +256,13 @@ export default function AlbumInside({
     } else if (currentPageIndex === 1) {
       return (slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) >= 12 && parseInt(slot.id.split("_")[1]) <= 23) || slot.id === "SPC_2";
     } else if (currentPageIndex === 2) {
+      return (slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) >= 24 && parseInt(slot.id.split("_")[1]) <= 35) || slot.id === "SPC_3";
+    } else if (currentPageIndex === 3) {
       return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) <= 11;
-    } else {
+    } else if (currentPageIndex === 4) {
       return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) >= 12 && parseInt(slot.id.split("_")[1]) <= 23;
+    } else {
+      return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) >= 24 && parseInt(slot.id.split("_")[1]) <= 35;
     }
   });
 
@@ -345,17 +361,28 @@ export default function AlbumInside({
 
       // Satisfies generic drop of any sticker to any tactical slot
       if (distance < 8.0) {
-        // Validation check for Minicraques slots / stickers
-        const isMinicraqueSticker = draggingSticker.id >= 101;
+        // Validation check for correct slot matching
+        const isMinicraqueSticker = draggingSticker.id >= 101 && draggingSticker.id <= 136;
         const isMinicraqueSlot = slot.id.startsWith("MC_");
 
+        const isTraditionalSticker = draggingSticker.id >= 1 && draggingSticker.id <= 36;
+        const isTraditionalSlot = slot.id.startsWith("BRA_");
+
         if (isMinicraqueSlot) {
+          if (!isMinicraqueSticker) return;
           const expectedSlotId = `MC_${draggingSticker.id - 101}`;
           if (slot.id !== expectedSlotId) {
             return;
           }
+        } else if (isTraditionalSlot) {
+          if (!isTraditionalSticker) return;
+          const expectedSlotId = `BRA_${draggingSticker.id - 1}`;
+          if (slot.id !== expectedSlotId) {
+            return;
+          }
         } else {
-          if (isMinicraqueSticker) {
+          // Special/Other slot checks (exact one-to-one match by predefined slotId)
+          if (draggingSticker.slotId !== slot.id) {
             return;
           }
         }
@@ -399,17 +426,27 @@ export default function AlbumInside({
 
     const selectedSticker = benchStickers.find(b => b.sticker.id === selectedStickerId)?.sticker;
     if (selectedSticker) {
-      // Validation check for Minicraques slots / stickers
-      const isMinicraqueSticker = selectedSticker.id >= 101;
+      // Validation check for correct slot matching
+      const isMinicraqueSticker = selectedSticker.id >= 101 && selectedSticker.id <= 136;
       const isMinicraqueSlot = slot.id.startsWith("MC_");
 
+      const isTraditionalSticker = selectedSticker.id >= 1 && selectedSticker.id <= 36;
+      const isTraditionalSlot = slot.id.startsWith("BRA_");
+
       if (isMinicraqueSlot) {
+        if (!isMinicraqueSticker) return;
         const expectedSlotId = `MC_${selectedSticker.id - 101}`;
         if (slot.id !== expectedSlotId) {
           return;
         }
+      } else if (isTraditionalSlot) {
+        if (!isTraditionalSticker) return;
+        const expectedSlotId = `BRA_${selectedSticker.id - 1}`;
+        if (slot.id !== expectedSlotId) {
+          return;
+        }
       } else {
-        if (isMinicraqueSticker) {
+        if (selectedSticker.slotId !== slot.id) {
           return;
         }
       }
@@ -441,31 +478,27 @@ export default function AlbumInside({
 
     const gluedOnRun = new Set<number>();
 
-    // Iterate through all empty slots on pages (ignoring special slots)
-    activeSlots.filter(s => s.id.startsWith("BRA_")).forEach(slot => {
+    // Iterate through all empty slots on current page (ignoring special slots)
+    activeSlots.filter(s => s.id.startsWith("BRA_") || s.id.startsWith("MC_")).forEach(slot => {
       const isOccupied = userStickers.some(u => u.status === 'glued' && u.slotId === slot.id);
       if (!isOccupied && available.length > 0) {
-        // Find the first available sticker that is NOT already glued anywhere, and not glued on this run
+        // Find the sticker that belongs exactly to this slot
         const targetBundleIdx = available.findIndex(b => {
           const isAlreadyGlued = userStickers.some(u => u.stickerId === b.sticker.id && u.status === 'glued');
           const isGluedOnRun = gluedOnRun.has(b.sticker.id);
-          return !isAlreadyGlued && !isGluedOnRun;
+          const matchesThisSlot = b.sticker.slotId === slot.id;
+          return !isAlreadyGlued && !isGluedOnRun && matchesThisSlot;
         });
 
         if (targetBundleIdx !== -1) {
           const targetBundle = available[targetBundleIdx];
-          const isPage1Slot = parseInt(slot.id.split("_")[1]) <= 11;
-          const isPage1Sticker = targetBundle.sticker.id <= 12;
+          onGlueSticker(targetBundle.sticker.id, slot.id);
+          gluedOnRun.add(targetBundle.sticker.id);
 
-          if (isPage1Slot === isPage1Sticker) {
-            onGlueSticker(targetBundle.sticker.id, slot.id);
-            gluedOnRun.add(targetBundle.sticker.id);
-
-            // Deduct count
-            targetBundle.count -= 1;
-            if (targetBundle.count <= 0) {
-              available.splice(targetBundleIdx, 1);
-            }
+          // Deduct count
+          targetBundle.count -= 1;
+          if (targetBundle.count <= 0) {
+            available.splice(targetBundleIdx, 1);
           }
         }
       }
@@ -621,10 +654,24 @@ export default function AlbumInside({
   // Filter out which sticker object is assigned to this slot (by ID matching)
   const getGluedStickerOnSlot = (slotId: string): Sticker | null => {
     if (slotId === 'SPC_1') {
-      return isPage1Completed ? STICKERS.find(s => s.id === 25) || null : null;
+      return isPage1Completed ? STICKERS.find(s => s.id === 201) || null : null;
     }
     if (slotId === 'SPC_2') {
-      return isPage2Completed ? STICKERS.find(s => s.id === 26) || null : null;
+      return isPage2Completed ? STICKERS.find(s => s.id === 202) || null : null;
+    }
+    if (slotId === 'SPC_3') {
+      return isPage3Completed ? STICKERS.find(s => s.id === 203) || null : null;
+    }
+    if (slotId === 'SPC_4') {
+      return isVersoCompleted ? STICKERS.find(s => s.id === 204) || null : null;
+    }
+    if (slotId === 'SPC_5') {
+      const coreGluedCount = new Set(
+        userStickers
+          .filter(u => u.status === 'glued' && u.stickerId < 201)
+          .map(u => u.stickerId)
+      ).size;
+      return coreGluedCount >= 72 ? STICKERS.find(s => s.id === 205) || null : null;
     }
     const record = userStickers.find(u => u.status === 'glued' && u.slotId === slotId);
     if (!record) return null;
@@ -747,16 +794,16 @@ export default function AlbumInside({
                       onPageIndexChange(2);
                     }
                   }}
-                  style={currentPageIndex === 2 ? { backgroundColor: '#db2777' } : undefined}
+                  style={currentPageIndex === 2 ? { backgroundColor: '#7b2e98' } : undefined}
                   className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
                     currentPageIndex === 2
                       ? 'text-white font-black'
                       : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
                   }`}
                 >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 1 (⚡)</span>
+                  <span className="font-extrabold uppercase text-[11px] tracking-wide">CONVOCADOS 3</span>
                   <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 101 && u.stickerId <= 112).length}/12
+                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 25 && u.stickerId <= 36).length}/12
                   </span>
                 </button>
 
@@ -774,9 +821,49 @@ export default function AlbumInside({
                       : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
                   }`}
                 >
+                  <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 1 (⚡)</span>
+                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
+                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 101 && u.stickerId <= 112).length}/12
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (currentPageIndex !== 4) {
+                      playPageFlip();
+                      onPageIndexChange(4);
+                    }
+                  }}
+                  style={currentPageIndex === 4 ? { backgroundColor: '#db2777' } : undefined}
+                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                    currentPageIndex === 4
+                      ? 'text-white font-black'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                  }`}
+                >
                   <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 2 (⚡)</span>
                   <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
                     {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 113 && u.stickerId <= 124).length}/12
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (currentPageIndex !== 5) {
+                      playPageFlip();
+                      onPageIndexChange(5);
+                    }
+                  }}
+                  style={currentPageIndex === 5 ? { backgroundColor: '#db2777' } : undefined}
+                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                    currentPageIndex === 5
+                      ? 'text-white font-black'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                  }`}
+                >
+                  <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 3 (⚡)</span>
+                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
+                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 125 && u.stickerId <= 136).length}/12
                   </span>
                 </button>
               </div>
@@ -834,7 +921,7 @@ export default function AlbumInside({
           onClick={() => {
             if (currentPageIndex > 0) {
               playPageFlip();
-              onPageIndexChange((currentPageIndex - 1) as 0 | 1 | 2 | 3);
+              onPageIndexChange(currentPageIndex - 1);
             } else {
               onPrevPage();
             }
@@ -861,13 +948,13 @@ export default function AlbumInside({
         
         {/* Dual Page Spread Album Image */}
         <img
-          src={(currentPageIndex === 2 || currentPageIndex === 3) ? "/src/assets/images/PAGINA3.png" : "/src/assets/images/PAGINA1.png"}
+          src={(currentPageIndex >= 3) ? "/src/assets/images/PAGINA3.png" : "/src/assets/images/PAGINA1.png"}
           alt="Álbum Bora Brasil Aberto"
           referrerPolicy="no-referrer"
           onError={(e) => {
             const currentSrc = e.currentTarget.src;
             if (currentSrc.includes('/src/assets/images/')) {
-              e.currentTarget.src = (currentPageIndex === 2 || currentPageIndex === 3) ? '/PAGINA3.png' : '/PAGINA1.png';
+              e.currentTarget.src = (currentPageIndex >= 3) ? '/PAGINA3.png' : '/PAGINA1.png';
             }
           }}
           className="w-full h-full object-cover pointer-events-none select-none"
@@ -893,14 +980,22 @@ export default function AlbumInside({
           const shouldSlotGlow = (() => {
             if (!currentTargetSticker) return false;
             
-            const isMinicraqueSticker = currentTargetSticker.id >= 101;
+            const isMinicraqueSticker = currentTargetSticker.id >= 101 && currentTargetSticker.id <= 136;
             const isMinicraqueSlot = slot.id.startsWith("MC_");
 
+            const isTraditionalSticker = currentTargetSticker.id >= 1 && currentTargetSticker.id <= 36;
+            const isTraditionalSlot = slot.id.startsWith("BRA_");
+
             if (isMinicraqueSlot) {
+              if (!isMinicraqueSticker) return false;
               const expectedSlotId = `MC_${currentTargetSticker.id - 101}`;
               return slot.id === expectedSlotId;
+            } else if (isTraditionalSlot) {
+              if (!isTraditionalSticker) return false;
+              const expectedSlotId = `BRA_${currentTargetSticker.id - 1}`;
+              return slot.id === expectedSlotId;
             } else {
-              return !isMinicraqueSticker;
+              return currentTargetSticker.slotId === slot.id;
             }
           })();
 
@@ -1137,7 +1232,7 @@ export default function AlbumInside({
           ];
 
           const idx = (zoomedSticker.id - 1) % 26;
-          const isSpecial = zoomedSticker.id === 25 || zoomedSticker.id === 26;
+          const isSpecial = zoomedSticker.id >= 201;
 
           let posName = '';
           if (slot) {
@@ -1345,9 +1440,9 @@ export default function AlbumInside({
         {/* Right Arrow Button (StickerBench styling, completely outside / visible) */}
         <button
           onClick={() => {
-            if (currentPageIndex < 3) {
+            if (currentPageIndex < 5) {
               playPageFlip();
-              onPageIndexChange((currentPageIndex + 1) as 0 | 1 | 2 | 3);
+              onPageIndexChange(currentPageIndex + 1);
             } else {
               playPageFlip();
               onNextPage();
@@ -1360,7 +1455,7 @@ export default function AlbumInside({
             height: '36px',
             padding: '0px',
           }}
-          aria-label={currentPageIndex < 3 ? "Ir para Próxima Página" : "Ir para a Escalação"}
+          aria-label={currentPageIndex < 5 ? "Ir para Próxima Página" : "Ir para a Escalação"}
         >
           <ChevronRight className="w-5 h-5 stroke-[3.5] text-white" />
         </button>
@@ -1370,7 +1465,7 @@ export default function AlbumInside({
       <div className="flex justify-center items-center max-w-5xl mx-auto w-full px-6 sm:px-16 print:hidden font-sans py-2">
         <div
           style={{ 
-            backgroundColor: (currentPageIndex === 2 || currentPageIndex === 3) ? '#db2777' : '#7833a9',
+            backgroundColor: (currentPageIndex >= 3) ? '#db2777' : '#7833a9',
             borderWidth: '2px',
             borderColor: '#000000',
             borderStyle: 'solid',

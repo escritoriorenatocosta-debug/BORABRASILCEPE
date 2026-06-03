@@ -20,9 +20,8 @@ export default function AlbumAchievements({
   onGlueSticker,
   onGoToMiniCraques
 }: AlbumAchievementsProps) {
-  // Filter for legendary/special stickers (assuming ID 25/26 are special, 
-  // or based on the logic in AlbumInside: isSpecial = sticker.id === 25 || sticker.id === 26)
-  const specialStickers = STICKERS.filter(s => s.id === 25 || s.id === 26 || s.id === 27);
+  // Filter for legendary/special stickers (SPC_1 to SPC_4 for top grid)
+  const specialStickers = STICKERS.filter(s => [201, 202, 203, 204].includes(s.id));
   
   const collectedSpecial = specialStickers.filter(special => 
     userStickers.some(u => u.stickerId === special.id && u.status === 'glued')
@@ -56,7 +55,7 @@ export default function AlbumAchievements({
       </div>
 
       {/* Achievements Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8 border border-[#c1c1c1] p-4 rounded-xl">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 border border-[#c1c1c1] p-4 rounded-xl">
         {specialStickers.map((special) => {
           const isCollected = collectedSpecial.some(c => c.id === special.id);
           return (
@@ -64,12 +63,12 @@ export default function AlbumAchievements({
               key={special.id}
               className={`p-4 rounded-2xl border-4 ${
                 isCollected 
-                  ? 'bg-emerald-900/50 border-emerald-500' 
+                  ? 'bg-emerald-900/50 border-emerald-500 shadow-[0_4px_20px_rgba(16,185,129,0.2)]' 
                   : 'bg-slate-900/50 border-slate-800'
               }`}
             >
               <div className="flex flex-col items-center gap-3">
-                <div className={`relative ${isCollected ? 'opacity-100' : 'opacity-30 grayscale'}`}>
+                <div className={`relative ${isCollected ? 'opacity-100 scale-100' : 'opacity-30 grayscale scale-95'} transition-all duration-300`}>
                   <StickerItem
                     sticker={special}
                     size="md"
@@ -78,48 +77,54 @@ export default function AlbumAchievements({
                   />
                   {!isCollected && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-white font-black text-xs uppercase bg-black/50 px-2 py-1 rounded">Bloqueado</span>
+                      <span className="text-white font-black text-xs uppercase bg-black/60 px-2 py-1 rounded border border-slate-700 shadow-md">Bloqueado</span>
                     </div>
                   )}
                 </div>
-                <h3 className="font-bold text-center text-white text-sm">{special.name}</h3>
+                <h3 className="font-extrabold text-center text-white text-xs uppercase tracking-tight leading-4">{special.name}</h3>
+                <p className="text-[10px] text-slate-300 font-semibold text-center leading-none">{special.role}</p>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Super Final Card SPC_4 - added below the 3 cards and centered with success message */}
+      {/* Super Final Card SPC_5 - "CAMPEÃO SUPREMO" centered with success message */}
       {(() => {
-        const totalStandardStickers = STICKERS.filter(s => s.id !== 28);
-        const isAlbumFullyCompleted = totalStandardStickers.length > 0 && totalStandardStickers.every(s => 
-          userStickers.some(u => u.stickerId === s.id && u.status === 'glued')
-        );
-        const spc4Sticker = STICKERS.find(s => s.id === 28);
-
-        if (!isAlbumFullyCompleted || !spc4Sticker) return null;
+        const spc5Sticker = STICKERS.find(s => s.id === 205);
+        if (!spc5Sticker) return null;
+        const isCollected = userStickers.some(u => u.stickerId === 205 && u.status === 'glued');
 
         return (
           <div 
             className="my-8 flex flex-col items-center justify-center p-6 border-4 rounded-[28px] max-w-sm mx-auto shadow-2xl relative overflow-hidden text-center animate-fade-in ring-4 ring-yellow-400/20"
-            style={{ borderColor: '#c0cecf', backgroundColor: '#ffffff' }}
+            style={{ 
+              borderColor: isCollected ? '#ffd100' : '#475569', 
+              backgroundColor: isCollected ? '#0f172a' : '#1e293b' 
+            }}
           >
-            <img 
-              src="/src/assets/images/GOOOL.png" 
-              alt="GOOOL!!!" 
-              className="h-16 object-contain mb-2 max-w-full drop-shadow-md"
-              referrerPolicy="no-referrer"
-            />
+            {isCollected ? (
+              <img 
+                src="/src/assets/images/GOOOL.png" 
+                alt="GOOOL!!!" 
+                className="h-16 object-contain mb-2 max-w-full drop-shadow-md animate-pulse"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-slate-950/50 flex items-center justify-center border border-slate-700/60 mb-2">
+                <Lucide.Lock className="w-5 h-5 text-slate-400" />
+              </div>
+            )}
+            
             <p 
-              className="text-xs font-bold uppercase tracking-wider mb-5"
-              style={{ color: '#000000' }}
+              className="text-xs font-black uppercase tracking-wider mb-4 text-yellow-400"
             >
-              Você completou seu álbum.
+              {isCollected ? 'Parabéns! Álbum Completo' : 'Final Ultimate Reward'}
             </p>
 
-            <div className="relative p-1.5 bg-gradient-to-tr from-yellow-500 via-amber-300 to-yellow-600 rounded-[24px] shadow-2xl">
+            <div className={`relative p-1.5 bg-gradient-to-tr from-yellow-500 via-amber-300 to-yellow-600 rounded-[24px] shadow-2xl transition-all duration-300 ${isCollected ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-95'}`}>
               <StickerItem
-                sticker={spc4Sticker}
+                sticker={spc5Sticker}
                 size="lg"
                 isGlued={true}
                 className="border-4 border-slate-950 shadow-inner rounded-xl hover:scale-105 transition-transform duration-300"
@@ -127,11 +132,16 @@ export default function AlbumAchievements({
             </div>
 
             <h3 
-              className="font-extrabold text-sm mt-4 tracking-tight uppercase"
-              style={{ color: '#000000' }}
+              className="font-extrabold text-sm mt-4 tracking-tight uppercase text-white"
             >
-              {spc4Sticker.name}
+              {spc5Sticker.name}
             </h3>
+            <p className="text-[11px] text-slate-300 mt-1 font-medium">
+              {isCollected 
+                ? 'Você se tornou o Campeão Supremo do CEPE!' 
+                : 'Complete 100% do Álbum para destravar'
+              }
+            </p>
           </div>
         );
       })()}

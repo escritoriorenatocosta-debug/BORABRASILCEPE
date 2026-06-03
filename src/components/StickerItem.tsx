@@ -31,7 +31,7 @@ export default function StickerItem({
 
   // Helper to obtain beautiful clean physical soccer position
   const displayPosition = (() => {
-    if (sticker.id >= 101 && sticker.id <= 124) {
+    if (sticker.id >= 101 && sticker.id <= 136) {
       return `Nº ${sticker.id - 100}`;
     }
 
@@ -56,9 +56,9 @@ export default function StickerItem({
 
   // Helper to render customized visual SVG avatar representing the real players
   const renderSvgAvatar = (id: number) => {
-    // Standard stickers 1 to 24 and minicraques 101 to 124 use base player models 1 to 12
-    const resolvedId = (id >= 101 && id <= 124) ? (id - 100) : id;
-    const baseId = resolvedId <= 24 ? ((resolvedId - 1) % 12) + 1 : resolvedId;
+    // Standard stickers 1 to 36 and minicraques 101 to 136 use base player models 1 to 12
+    const resolvedId = (id >= 101 && id <= 136) ? (id - 100) : id;
+    const baseId = resolvedId <= 36 ? ((resolvedId - 1) % 12) + 1 : resolvedId;
 
     // Custom facial features matching the attached photos of the team
     let skinColor = '#efcbb4'; // Light-medium skin
@@ -68,7 +68,7 @@ export default function StickerItem({
     let accessoryElement = null;
     let faceDetails = null;
 
-    if (baseId === 25) {
+    if (baseId === 201) {
       // Golden Special Cromo 1 render: Golden Medal and Ribbon (Flat Design)
       return (
         <g transform="translate(0, -2)">
@@ -83,7 +83,7 @@ export default function StickerItem({
       );
     }
 
-    if (baseId === 26) {
+    if (baseId === 202) {
       // Golden Special Cromo 2 render: Glorious Gold Trophy (Flat Design)
       return (
         <g transform="translate(0, -4)">
@@ -102,7 +102,7 @@ export default function StickerItem({
       );
     }
 
-    if (baseId === 27) {
+    if (baseId === 203) {
       // Golden Special Cromo 3 render: Elegant Laurel Shield (Flat Design)
       return (
         <g transform="translate(0, -2)">
@@ -114,6 +114,26 @@ export default function StickerItem({
           {/* Tiny details */}
           <polygon points="50,30 52,40 60,40 53,45 55,55 50,50 45,55 47,45 40,40 48,40" fill="#fff" />
           <text x="50" y="60" fill="#78350f" fontSize="6" fontWeight="black" textAnchor="middle" fontFamily="sans-serif">TIME</text>
+        </g>
+      );
+    }
+
+    if (baseId === 204) {
+      // Golden Special Cromo 4 render: Supreme Crown with Wings (Flat Design)
+      return (
+        <g transform="translate(0, -2)">
+          {/* Wings */}
+          <path d="M 32 50 C 15 40 15 65 32 70" fill="none" stroke="#fcd34d" strokeWidth="3" />
+          <path d="M 68 50 C 85 40 85 65 68 70" fill="none" stroke="#fcd34d" strokeWidth="3" strokeLinecap="round" />
+          {/* Brilliant Crown */}
+          <path d="M 30 75 L 70 75 L 66 52 L 58 64 L 50 48 L 42 64 L 34 52 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="2.5" />
+          {/* Jewels */}
+          <circle cx="50" cy="46" r="2.5" fill="#ef4444" />
+          <circle cx="34" cy="50" r="2" fill="#3b82f6" />
+          <circle cx="66" cy="50" r="2" fill="#3b82f6" />
+          <circle cx="58" cy="62" r="1.5" fill="#10b981" />
+          <circle cx="42" cy="62" r="1.5" fill="#10b981" />
+          <text x="50" y="86" fill="#78350f" fontSize="6.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">SUPREMO</text>
         </g>
       );
     }
@@ -383,7 +403,7 @@ export default function StickerItem({
           <img
             src={(() => {
               let path = sticker.imagePath;
-              if (sticker.id >= 101 && sticker.id <= 124) {
+              if (sticker.id >= 101 && sticker.id <= 136) {
                 if (path.includes('input_file_11.png')) {
                   path = '/src/assets/images/minicraque(16).png';
                 }
@@ -418,9 +438,9 @@ export default function StickerItem({
         <div 
           style={style}
           className={`w-full h-full relative flex flex-col items-center justify-between p-[4%] font-sans overflow-hidden ${
-            sticker.id >= 101 && sticker.id <= 124
+            sticker.id >= 101 && sticker.id <= 136
               ? 'bg-gradient-to-tr from-[#4f46e5] via-[#9333ea] to-[#db2777] border-4 border-violet-950 text-white'
-              : sticker.id >= 25 
+              : sticker.id >= 201 
               ? 'bg-[#fbbf24] border-4 border-[#d97706] text-amber-950' 
               : 'bg-[#80D5D8]'
           }`}
@@ -434,9 +454,9 @@ export default function StickerItem({
             preserveAspectRatio="none"
           >
             {/* Giant Green Number 2 */}
-            <path d="M -10 -10 L 40 -10 C 40 30 10 50 10 65 L 55 65 C 55 80 15 90 -10 90 Z" fill={sticker.id >= 25 ? "#b45309" : "#01a550"} opacity={sticker.id >= 25 ? "0.15" : "0.35"} />
+            <path d="M -10 -10 L 40 -10 C 40 30 10 50 10 65 L 55 65 C 55 80 15 90 -10 90 Z" fill={sticker.id >= 201 ? "#b45309" : "#01a550"} opacity={sticker.id >= 201 ? "0.15" : "0.35"} />
             {/* Giant Yellow Number 6 */}
-            <path d="M 60 20 C 85 20 110 40 110 75 C 110 110 80 125 50 120 C 35 117 38 90 55 90 C 70 90 85 85 85 70 C 85 55 70 48 50 48 Z" fill={sticker.id >= 25 ? "#f59e0b" : "#ffd100"} opacity={sticker.id >= 25 ? "0.2" : "0.45"} />
+            <path d="M 60 20 C 85 20 110 40 110 75 C 110 110 80 125 50 120 C 35 117 38 90 55 90 C 70 90 85 85 85 70 C 85 55 70 48 50 48 Z" fill={sticker.id >= 201 ? "#f59e0b" : "#ffd100"} opacity={sticker.id >= 201 ? "0.2" : "0.45"} />
             {/* Outline decorative stars */}
             <polygon points="12,12 14,16 18,16 15,19 16,23 12,21 8,23 9,19 6,16 10,16" fill="#01a550" opacity="0.2" />
             <polygon points="85,32 87,36 91,36 88,39 89,43 85,41 81,43 82,39 79,36 83,36" fill="#ffd100" opacity="0.3" />
@@ -448,7 +468,7 @@ export default function StickerItem({
               BRASIL
             </span>
             <div className="flex flex-col items-end leading-none">
-              <span className="text-[120%] font-black">{sticker.id <= 24 ? "26" : "★"}</span>
+              <span className="text-[120%] font-black">{sticker.id <= 36 ? "26" : "★"}</span>
               <span className="text-[60%] tracking-widest uppercase leading-none font-sans font-black">cepe</span>
             </div>
           </div>
@@ -469,7 +489,7 @@ export default function StickerItem({
           <div className="w-full flex flex-col gap-1 items-center z-10 mb-1 select-none pointer-events-none">
             {/* Name Capsule styling exactly matching Diego Maradona photo (No IDs or system codes!) */}
             <div className={`w-[94%] font-sans font-black tracking-wide uppercase text-[9px] py-1 rounded-lg text-center truncate ${
-              sticker.id >= 101 && sticker.id <= 124
+              sticker.id >= 101 && sticker.id <= 136
                 ? 'bg-violet-950 border border-violet-800/40 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]'
                 : 'bg-emerald-900 border border-emerald-700/50 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]'
             }`}>
@@ -477,7 +497,7 @@ export default function StickerItem({
             </div>
             {/* Department Capsule */}
             <div className={`w-[82%] font-sans font-bold uppercase text-[7px] py-[1.5px] rounded-full text-center truncate ${
-              sticker.id >= 101 && sticker.id <= 124
+              sticker.id >= 101 && sticker.id <= 136
                 ? 'bg-pink-850 border border-pink-700/60 text-pink-100'
                 : 'bg-[#0d6b55] border border-[#09503e] text-[#bbf7d0]'
             }`}>

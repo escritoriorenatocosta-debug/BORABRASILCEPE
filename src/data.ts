@@ -9,7 +9,7 @@ export const STICKERS: Sticker[] = [
   // PAGE 1 STICKERS (1 - 12)
   {
     id: 1,
-    name: "Janio Santos",
+    name: "Janio",
     role: "Editora",
     imagePath: "/src/assets/images/input_file_1.png",
     slotId: "BRA_0"
@@ -44,14 +44,14 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 6,
-    name: "Júlia Lobo",
+    name: "Júlia",
     role: "Sumid",
     imagePath: "/src/assets/images/input_file_6.png",
     slotId: "BRA_5"
   },
   {
     id: 7,
-    name: "Lucas Furtado",
+    name: "Lucas",
     role: "Sumid",
     imagePath: "/src/assets/images/input_file_7.png",
     slotId: "BRA_6"
@@ -158,7 +158,7 @@ export const STICKERS: Sticker[] = [
   },
   {
     id: 22,
-    name: "Stefane",
+    name: "Stéfane",
     role: "Comercial",
     imagePath: "/src/assets/images/input_file_22.png",
     slotId: "BRA_21"
@@ -177,63 +177,171 @@ export const STICKERS: Sticker[] = [
     imagePath: "/src/assets/images/input_file_24.png",
     slotId: "BRA_23"
   },
+// PAGE 3 STICKERS (25 - 36) - New traditional page
+  {
+    id: 25,
+    name: "Evany",
+    role: "RH",
+    imagePath: "/src/assets/images/input_file_ 25.png",
+    slotId: "BRA_24"
+  },
+  {
+    id: 26,
+    name: "Márcio",
+    role: "Gráfica",
+    imagePath: "/src/assets/images/input_file_26.png",
+    slotId: "BRA_25"
+  },
+  {
+    id: 27,
+    name: "Giba",
+    role: "Expedição",
+    imagePath: "/src/assets/images/input_file_27.png",
+    slotId: "BRA_26"
+  },
+  {
+    id: 28,
+    name: "Longui",
+    role: "Vigilante",
+    imagePath: "/src/assets/images/input_file_28.png",
+    slotId: "BRA_27"
+  },
+  {
+    id: 29,
+    name: "Leozinho",
+    role: "Manutenção",
+    imagePath: "/src/assets/images/input_file_29.png",
+    slotId: "BRA_28"
+  },
+  {
+    id: 30,
+    name: "Marcus",
+    role: "Editora",
+    imagePath: "/src/assets/images/input_file_30.png",
+    slotId: "BRA_29"
+  },
+  {
+    id: 31,
+    name: "Edilton",
+    role: "Motorista",
+    imagePath: "/src/assets/images/input_file_31.png",
+    slotId: "BRA_30"
+  },
+  {
+    id: 32,
+    name: "Baleia",
+    role: "Motorista",
+    imagePath: "/src/assets/images/input_file_32.png",
+    slotId: "BRA_31"
+  },
+  {
+    id: 33,
+    name: "Patrícia",
+    role: "Comercial",
+    imagePath: "/src/assets/images/input_file_33.png",
+    slotId: "BRA_32"
+  },
+  {
+    id: 34,
+    name: "Ednaldo",
+    role: "Vigilante",
+    imagePath: "/src/assets/images/input_file_34.png",
+    slotId: "BRA_33"
+  },
+  {
+    id: 35,
+    name: "Samara",
+    role: "Editora",
+    imagePath: "/src/assets/images/input_file_35.png",
+    slotId: "BRA_34"
+  },
+  {
+    id: 36,
+    name: "Flávio",
+    role: "Gráfica",
+    imagePath: "/src/assets/images/input_file_36.png",
+    slotId: "BRA_35"
+  },
 
   // MINICRAQUES PAGE 3 STICKERS (101 - 112)
-  { id: 101, name: "Janio Santos", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(10).png", slotId: "MC_0" },
+  { id: 101, name: "Janio", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(10).png", slotId: "MC_0" },
   { id: 102, name: "Davizinho", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(4).png", slotId: "MC_1" },
-  { id: 103, name: "Diego Maradona", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(5).png", slotId: "MC_2" },
+  { id: 103, name: "Diego", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(5).png", slotId: "MC_2" },
   { id: 104, name: "Ed Soares", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(7).png", slotId: "MC_3" },
   { id: 105, name: "Guilherme", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(9).png", slotId: "MC_4" },
-  { id: 106, name: "Júlia Lobo", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(11).png", slotId: "MC_5" },
-  { id: 107, name: "Lucas Furtado", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(13).png", slotId: "MC_6" },
+  { id: 106, name: "Júlia", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(11).png", slotId: "MC_5" },
+  { id: 107, name: "Lucas", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(13).png", slotId: "MC_6" },
   { id: 108, name: "Costinha", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(3).png", slotId: "MC_7" },
-  { id: 109, name: "Rodolfo G.", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(19).png", slotId: "MC_8" },
-  { id: 110, name: "Rodolfo E.", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(18).png", slotId: "MC_9" },
+  { id: 109, name: "Rodolfo", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(19).png", slotId: "MC_8" },
+  { id: 110, name: "Rodolfinho", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(18).png", slotId: "MC_9" },
   { id: 111, name: "Nando", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(16).png", slotId: "MC_10" },
-  { id: 112, name: "Mascote CEPE", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(15).png", slotId: "MC_11" },
+  { id: 112, name: "Marina", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(15).png", slotId: "MC_11" },
 
   // MINICRAQUES PAGE 4 STICKERS (113 - 124)
-  { id: 113, name: "Jânio Santos II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(1).png", slotId: "MC_12" },
-  { id: 114, name: "Davizinho II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(8).png", slotId: "MC_13" },
-  { id: 115, name: "Diego Maradona II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(21).png", slotId: "MC_14" },
-  { id: 116, name: "Ed II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(23).png", slotId: "MC_15" },
-  { id: 117, name: "Guilherme II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(6).png", slotId: "MC_16" },
-  { id: 118, name: "Júlia Lobo II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(2).png", slotId: "MC_17" },
-  { id: 119, name: "Lucas Furtado II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(12).png", slotId: "MC_18" },
-  { id: 120, name: "Costinha II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(14).png", slotId: "MC_19" },
-  { id: 121, name: "Rodolfo G. II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(17).png", slotId: "MC_20" },
-  { id: 122, name: "Rodolfo E. II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(22).png", slotId: "MC_21" },
-  { id: 123, name: "Nando II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(20).png", slotId: "MC_22" },
-  { id: 124, name: "Mascote CEPE II", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(24).png", slotId: "MC_23" },
+  { id: 113, name: "Arthur", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(1).png", slotId: "MC_12" },
+  { id: 114, name: "Fabíola", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(8).png", slotId: "MC_13" },
+  { id: 115, name: "Silvia", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(21).png", slotId: "MC_14" },
+  { id: 116, name: "Vanessa", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(23).png", slotId: "MC_15" },
+  { id: 117, name: "Dudley", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(6).png", slotId: "MC_16" },
+  { id: 118, name: "Bruna", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(2).png", slotId: "MC_17" },
+  { id: 119, name: "Larissa", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(12).png", slotId: "MC_18" },
+  { id: 120, name: "Mariana", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(14).png", slotId: "MC_19" },
+  { id: 121, name: "Roberta", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(17).png", slotId: "MC_20" },
+  { id: 122, name: "Stéfane", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(22).png", slotId: "MC_21" },
+  { id: 123, name: "Sebastião", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(20).png", slotId: "MC_22" },
+  { id: 124, name: "Victor", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(24).png", slotId: "MC_23" },
+
+
+
+  // MINICRAQUES PAGE 5 STICKERS (125 - 136)
+  { id: 125, name: "Renato", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(1).png", slotId: "MC_24" },
+  { id: 126, name: "Felipe", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(2).png", slotId: "MC_25" },
+  { id: 127, name: "Aline", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(3).png", slotId: "MC_26" },
+  { id: 128, name: "Marcos", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(4).png", slotId: "MC_27" },
+  { id: 129, name: "Sônia", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(5).png", slotId: "MC_28" },
+  { id: 130, name: "Thiago", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(6).png", slotId: "MC_29" },
+  { id: 131, name: "Clara", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(7).png", slotId: "MC_30" },
+  { id: 132, name: "Gabriel", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(8).png", slotId: "MC_31" },
+  { id: 133, name: "Patrícia", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(9).png", slotId: "MC_32" },
+  { id: 134, name: "Renan", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(10).png", slotId: "MC_33" },
+  { id: 135, name: "Beatriz", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(11).png", slotId: "MC_34" },
+  { id: 136, name: "Daniel", role: "Minicraque ⚡", imagePath: "/src/assets/images/minicraque(12).png", slotId: "MC_35" },
 
   // SPECIAL PAGE COMPLETION CROMOS
   {
-    id: 25,
+    id: 201,
     name: "CEPE OURO",
-    role: "Cromo Especial 🥇",
+    role: "Cromo Especial",
     imagePath: "/src/assets/images/cromoespecial1.png", // will render elegant golden custom vector frame
     slotId: "SPC_1"
   },
   {
-    id: 26,
+    id: 202,
     name: "SUPER CEPE",
-    role: "Cromo Especial 🏆",
+    role: "Cromo Especial",
     imagePath: "/src/assets/images/Premio.png", // will render elegant golden custom vector frame
     slotId: "SPC_2"
   },
   {
-    id: 27,
+    id: 203,
     name: "BORA BRASIL",
-    role: "Cromo Especial 🎖️",
+    role: "Cromo Especial",
     imagePath: "/src/assets/images/cromoespecial2.png",
     slotId: "SPC_3"
   },
   {
-    id: 28,
-    name: "CAMPEÃO SUPREMO",
-    role: "Cromo Lendário 👑",
-    imagePath: "/src/assets/images/Final.png",
+    id: 204,
+    name: "TIME DOS SONHOS",
+    role: "Escalação de Gala",
+    imagePath: "/src/assets/images/input_file_25.png",
     slotId: "SPC_4"
+  },
+  {
+    id: 205,
+    name: "CAMPEÃO SUPREMO",
+    role: "Cromo Lendário ",
+    imagePath: "/src/assets/images/Final.png",
+    slotId: "SPC_5"
   }
 ];
 
@@ -272,13 +380,31 @@ export const SLOTS: Slot[] = [
   { id: "BRA_22", label: "Ponta Direita II", left: 83.9, top: 37.3, width: 11.2, height: 24.3 },
   { id: "BRA_23", label: "Técnico II", left: 83.9, top: 68.3, width: 11.2, height: 24.3 },
 
+  // --- PAGE 3 SLOTS (Traditional) ---
+  // Left Page Slots (Page 3 - identical positions to page 1)
+  { id: "BRA_24", label: "Goleira/Goleiro III", left: 3.5, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "BRA_25", label: "Lateral Direito III", left: 17.8, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "BRA_26", label: "Zagueira/Zagueiro III", left: 32.1, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "BRA_27", label: "Zagueira/Zagueiro III", left: 17.8, top: 68.3, width: 11.2, height: 24.3 },
+  { id: "BRA_28", label: "Lateral Esquerdo III", left: 32.1, top: 68.3, width: 11.2, height: 24.3 },
+
+  // Right Page Slots (Page 3 - identical positions to page 1)
+  { id: "BRA_29", label: "Volante (Meio) III", left: 55.4, top: 6.2, width: 11.2, height: 24.3 },
+  { id: "BRA_30", label: "Meia Armador III", left: 69.7, top: 6.2, width: 11.2, height: 24.3 },
+  { id: "BRA_31", label: "Meio-Campo III", left: 83.9, top: 6.2, width: 11.2, height: 24.3 },
+  { id: "BRA_32", label: "Ponta Esquerda III", left: 55.4, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "BRA_33", label: "Centroavante III", left: 69.7, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "BRA_34", label: "Ponta Direita III", left: 83.9, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "BRA_35", label: "Técnico III", left: 83.9, top: 68.3, width: 11.2, height: 24.3 },
+
   // --- SPECIAL CROMO COVER SLOTS (below the goalkeeper) ---
   { id: "SPC_1", label: "Cromo Especial 🥇", left: 3.5, top: 68.3, width: 11.2, height: 24.3 },
   { id: "SPC_2", label: "Cromo Especial 🏆", left: 3.5, top: 68.3, width: 11.2, height: 24.3 },
   { id: "SPC_3", label: "Cromo Especial 🎖️", left: 3.5, top: 68.3, width: 11.2, height: 24.3 },
-  { id: "SPC_4", label: "Campeão Supremo 👑", left: 3.5, top: 68.3, width: 11.2, height: 24.3 },
+  { id: "SPC_4", label: "Time dos Sonhos ⚽", left: 55.4, top: 68.3, width: 11.2, height: 24.3 },
+  { id: "SPC_5", label: "Campeão Supremo 👑", left: 69.7, top: 68.3, width: 11.2, height: 24.3 },
 
-  // --- MINICRAQUE PAGE 3 SLOTS (Same coordinates as Page 1) ---
+  // --- MINICRAQUE PAGE 4 SLOTS (Formerly Page 3) ---
   { id: "MC_0", label: "Nº 1", left: 3.5, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_1", label: "Nº 2", left: 17.8, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_2", label: "Nº 3", left: 32.1, top: 37.3, width: 11.2, height: 24.3 },
@@ -292,7 +418,7 @@ export const SLOTS: Slot[] = [
   { id: "MC_10", label: "Nº 11", left: 83.9, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_11", label: "Nº 12", left: 83.9, top: 68.3, width: 11.2, height: 24.3 },
 
-  // --- MINICRAQUE PAGE 4 SLOTS (Same coordinates as Page 2) ---
+  // --- MINICRAQUE PAGE 5 SLOTS (Formerly Page 4) ---
   { id: "MC_12", label: "Nº 13", left: 3.5, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_13", label: "Nº 14", left: 17.8, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_14", label: "Nº 15", left: 32.1, top: 37.3, width: 11.2, height: 24.3 },
@@ -304,5 +430,19 @@ export const SLOTS: Slot[] = [
   { id: "MC_20", label: "Nº 21", left: 55.4, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_21", label: "Nº 22", left: 69.7, top: 37.3, width: 11.2, height: 24.3 },
   { id: "MC_22", label: "Nº 23", left: 83.9, top: 37.3, width: 11.2, height: 24.3 },
-  { id: "MC_23", label: "Nº 24", left: 83.9, top: 68.3, width: 11.2, height: 24.3 }
+  { id: "MC_23", label: "Nº 24", left: 83.9, top: 68.3, width: 11.2, height: 24.3 },
+
+  // --- MINICRAQUE PAGE 6 SLOTS ---
+  { id: "MC_24", label: "Nº 25", left: 3.5, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "MC_25", label: "Nº 26", left: 17.8, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "MC_26", label: "Nº 27", left: 32.1, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "MC_27", label: "Nº 28", left: 17.8, top: 68.3, width: 11.2, height: 24.3 },
+  { id: "MC_28", label: "Nº 29", left: 32.1, top: 68.3, width: 11.2, height: 24.3 },
+  { id: "MC_29", label: "Nº 30", left: 55.4, top: 6.2, width: 11.2, height: 24.3 },
+  { id: "MC_30", label: "Nº 31", left: 69.7, top: 6.2, width: 11.2, height: 24.3 },
+  { id: "MC_31", label: "Nº 32", left: 83.9, top: 6.2, width: 11.2, height: 24.3 },
+  { id: "MC_32", label: "Nº 33", left: 55.4, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "MC_33", label: "Nº 34", left: 69.7, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "MC_34", label: "Nº 35", left: 83.9, top: 37.3, width: 11.2, height: 24.3 },
+  { id: "MC_35", label: "Nº 36", left: 83.9, top: 68.3, width: 11.2, height: 24.3 }
 ];

@@ -30,13 +30,15 @@ const getInitialRouteInfo = () => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     
-    let matched: 'entrada' | 'capa' | 'album' | 'album2' | 'album3' | 'album4' | 'verso' | 'ajuste' | 'conquistas' | 'minicraques' | 'bancada' | null = null;
+    let matched: 'entrada' | 'capa' | 'album' | 'album2' | 'album3' | 'album4' | 'album5' | 'album6' | 'verso' | 'ajuste' | 'conquistas' | 'minicraques' | 'bancada' | null = null;
     if (path === '/entrada' || hash === '#/entrada') matched = 'entrada';
     else if (path === '/capa' || hash === '#/capa') matched = 'capa';
     else if (path === '/album' || hash === '#/album') matched = 'album';
     else if (path === '/album2' || hash === '#/album2') matched = 'album2';
     else if (path === '/album3' || hash === '#/album3') matched = 'album3';
     else if (path === '/album4' || hash === '#/album4') matched = 'album4';
+    else if (path === '/album5' || hash === '#/album5') matched = 'album5';
+    else if (path === '/album6' || hash === '#/album6') matched = 'album6';
     else if (path === '/verso' || hash === '#/verso') matched = 'verso';
     else if (path === '/ajuste' || hash === '#/ajuste' || hash === '#ajuste') matched = 'ajuste';
     else if (path === '/conquistas' || hash === '#/conquistas') matched = 'conquistas';
@@ -44,46 +46,52 @@ const getInitialRouteInfo = () => {
     else if (path === '/bancada' || hash === '#/bancada') matched = 'bancada';
 
     if (matched === 'capa') {
-      return { entered: true, currentPage: 'cover' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'cover' as const, albumPageIndex: 0 };
     }
     if (matched === 'bancada') {
-      return { entered: true, currentPage: 'bancada' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'bancada' as const, albumPageIndex: 0 };
     }
     if (matched === 'album') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 0 };
     }
     if (matched === 'album2') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 1 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 1 };
     }
     if (matched === 'album3') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 2 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 2 };
     }
     if (matched === 'album4') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 3 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 3 };
+    }
+    if (matched === 'album5') {
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 4 };
+    }
+    if (matched === 'album6') {
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 5 };
     }
     if (matched === 'verso') {
-      return { entered: true, currentPage: 'back' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'back' as const, albumPageIndex: 0 };
     }
     if (matched === 'conquistas') {
-      return { entered: true, currentPage: 'achievements' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'achievements' as const, albumPageIndex: 0 };
     }
     if (matched === 'minicraques') {
-      return { entered: true, currentPage: 'minicraques' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'minicraques' as const, albumPageIndex: 0 };
     }
     if (matched === 'ajuste') {
-      return { entered: true, currentPage: 'cover' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+      return { entered: true, currentPage: 'cover' as const, albumPageIndex: 0 };
     }
   } catch (_) {}
   
   // Default to Entry Page
-  return { entered: false, currentPage: 'cover' as const, albumPageIndex: 0 as 0 | 1 | 2 | 3 };
+  return { entered: false, currentPage: 'cover' as const, albumPageIndex: 0 };
 };
 
 export default function App() {
   const initialRoute = getInitialRouteInfo();
   const [entered, setEntered] = useState(initialRoute.entered);
   const [currentPage, setCurrentPage] = useState<'cover' | 'album' | 'back' | 'achievements' | 'minicraques' | 'bancada'>(initialRoute.currentPage);
-  const [albumPageIndex, setAlbumPageIndex] = useState<0 | 1 | 2 | 3>(initialRoute.albumPageIndex);
+  const [albumPageIndex, setAlbumPageIndex] = useState<number>(initialRoute.albumPageIndex);
   const [userStickers, setUserStickers] = useState<UserSticker[]>([]);
   const [draggingSticker, setDraggingSticker] = useState<Sticker | null>(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
@@ -117,8 +125,35 @@ export default function App() {
     }
   });
 
+  const [celebratedPage3, setCelebratedPage3] = useState(() => {
+    try {
+      return localStorage.getItem('cepe_celebrated_page3') === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  const [celebratedPage4, setCelebratedPage4] = useState(() => {
+    try {
+      return localStorage.getItem('cepe_celebrated_page4') === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  const [isVersoCompleted, setIsVersoCompleted] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('cepe_dream_team_lineup_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return Object.values(parsed).length === 11 && Object.values(parsed).every(val => val !== null);
+      }
+    } catch (_) {}
+    return false;
+  });
+
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
-  const [celebrationPageName, setCelebrationPageName] = useState<'titulares' | 'reservas' | 'minicraques' | null>(null);
+  const [celebrationPageName, setCelebrationPageName] = useState<'titulares' | 'reservas' | 'auxiliares' | 'minicraques' | 'verso' | null>(null);
   const [specialStickerAwarded, setSpecialStickerAwarded] = useState<Sticker | null>(null);
   const [showFullCompletionModal, setShowFullCompletionModal] = useState(false);
 
@@ -229,9 +264,9 @@ export default function App() {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (stored) {
         let loaded: UserSticker[] = JSON.parse(stored);
-        // Automatic migration: If sticker 27 exists as 'inventory', change it to 'glued' with slotId 'SPC_3'
+        // Automatic migration: If sticker 203 exists as 'inventory', change it to 'glued' with slotId 'SPC_3'
         loaded = loaded.map(u => {
-          if (u.stickerId === 27 && u.status === 'inventory') {
+          if (u.stickerId === 203 && u.status === 'inventory') {
             return { ...u, status: 'glued', slotId: 'SPC_3' };
           }
           return u;
@@ -291,6 +326,8 @@ export default function App() {
       else if (currentPage === 'album' && albumPageIndex === 1) targetPath = '/album2';
       else if (currentPage === 'album' && albumPageIndex === 2) targetPath = '/album3';
       else if (currentPage === 'album' && albumPageIndex === 3) targetPath = '/album4';
+      else if (currentPage === 'album' && albumPageIndex === 4) targetPath = '/album5';
+      else if (currentPage === 'album' && albumPageIndex === 5) targetPath = '/album6';
       else if (currentPage === 'back') targetPath = '/verso';
       else if (currentPage === 'achievements') targetPath = '/conquistas';
       else if (currentPage === 'minicraques') targetPath = '/minicraques';
@@ -401,16 +438,24 @@ export default function App() {
     });
   };
 
+  const handleLineupCompletionChange = (isComplete: boolean) => {
+    setIsVersoCompleted(isComplete);
+  };
+
   // Clear state and start fresh
   const handleResetProgress = () => {
     setUserStickers([]);
     setCelebratedPage1(false);
     setCelebratedPage2(false);
+    setCelebratedPage3(false);
+    setCelebratedPage4(false);
     try {
       localStorage.removeItem('cepe_dream_team_lineup_v2');
       localStorage.removeItem('cepe_dream_team_formation_v2');
       localStorage.setItem('cepe_celebrated_page1', 'false');
       localStorage.setItem('cepe_celebrated_page2', 'false');
+      localStorage.setItem('cepe_celebrated_page3', 'false');
+      localStorage.setItem('cepe_celebrated_page4', 'false');
       localStorage.removeItem('cepe_has_celebrated_full_completion_v1');
     } catch (_) {}
     setCurrentPage('cover');
@@ -426,6 +471,10 @@ export default function App() {
     return userStickers.some(u => u.status === 'glued' && u.slotId === `BRA_${idx}`);
   });
 
+  const isPage3CompletedNow = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35].every(idx => {
+    return userStickers.some(u => u.status === 'glued' && u.slotId === `BRA_${idx}`);
+  });
+
   useEffect(() => {
     if (!initialized) return;
 
@@ -435,18 +484,14 @@ export default function App() {
         localStorage.setItem('cepe_celebrated_page1', 'true');
       } catch (_) {}
       
-      const spec = STICKERS.find(s => s.id === 25);
+      const spec = STICKERS.find(s => s.id === 201);
       if (spec) {
         setSpecialStickerAwarded(spec);
         setUserStickers(prev => {
-          const hasIt = prev.some(u => u.stickerId === 25);
-          const has27 = prev.some(u => u.stickerId === 27);
+          const hasIt = prev.some(u => u.stickerId === 201);
           let next = [...prev];
           if (!hasIt) {
-            next.push({ stickerId: 25, status: 'glued', slotId: 'SPC_1' });
-          }
-          if (!has27) {
-            next.push({ stickerId: 27, status: 'glued', slotId: 'SPC_3' });
+            next.push({ stickerId: 201, status: 'glued', slotId: 'SPC_1' });
           }
           return next;
         });
@@ -462,20 +507,70 @@ export default function App() {
         localStorage.setItem('cepe_celebrated_page2', 'true');
       } catch (_) {}
 
-      const spec = STICKERS.find(s => s.id === 26);
+      const spec = STICKERS.find(s => s.id === 202);
       if (spec) {
         setSpecialStickerAwarded(spec);
         setUserStickers(prev => {
-          const hasIt = prev.some(u => u.stickerId === 26);
+          const hasIt = prev.some(u => u.stickerId === 202);
           if (hasIt) return prev;
-          return [...prev, { stickerId: 26, status: 'glued', slotId: 'SPC_2' }];
+          return [...prev, { stickerId: 202, status: 'glued', slotId: 'SPC_2' }];
         });
       }
       setCelebrationPageName('reservas');
       setShowCelebrationModal(true);
       playGoalCrowd();
     }
-  }, [isPage1CompletedNow, isPage2CompletedNow, celebratedPage1, celebratedPage2, initialized]);
+
+    if (isPage3CompletedNow && !celebratedPage3) {
+      setCelebratedPage3(true);
+      try {
+        localStorage.setItem('cepe_celebrated_page3', 'true');
+      } catch (_) {}
+
+      const spec = STICKERS.find(s => s.id === 203);
+      if (spec) {
+        setSpecialStickerAwarded(spec);
+        setUserStickers(prev => {
+          const hasIt = prev.some(u => u.stickerId === 203);
+          if (hasIt) return prev;
+          return [...prev, { stickerId: 203, status: 'glued', slotId: 'SPC_3' }];
+        });
+      }
+      setCelebrationPageName('auxiliares');
+      setShowCelebrationModal(true);
+      playGoalCrowd();
+    }
+
+    if (isVersoCompleted && !celebratedPage4) {
+      setCelebratedPage4(true);
+      try {
+        localStorage.setItem('cepe_celebrated_page4', 'true');
+      } catch (_) {}
+
+      const spec = STICKERS.find(s => s.id === 204);
+      if (spec) {
+        setSpecialStickerAwarded(spec);
+        setUserStickers(prev => {
+          const hasIt = prev.some(u => u.stickerId === 204);
+          if (hasIt) return prev;
+          return [...prev, { stickerId: 204, status: 'glued', slotId: 'SPC_4' }];
+        });
+      }
+      setCelebrationPageName('verso');
+      setShowCelebrationModal(true);
+      playGoalCrowd();
+    }
+  }, [
+    isPage1CompletedNow, 
+    isPage2CompletedNow, 
+    isPage3CompletedNow, 
+    isVersoCompleted, 
+    celebratedPage1, 
+    celebratedPage2, 
+    celebratedPage3, 
+    celebratedPage4, 
+    initialized
+  ]);
 
   // Shortcut to toggle Goal Celebration Modal ("/" key)
   useEffect(() => {
@@ -498,7 +593,7 @@ export default function App() {
           if (nextVal) {
             // Pick a special sticker if none is currently selected to ensure beautiful test preview
             if (!specialStickerAwarded) {
-              const spec = STICKERS.find(s => s.id === 25) || STICKERS[0];
+              const spec = STICKERS.find(s => s.id === 201) || STICKERS[0];
               setSpecialStickerAwarded(spec);
               setCelebrationPageName('titulares');
             }
@@ -518,11 +613,11 @@ export default function App() {
 
   // Derived queries
   const gluedStickerIds = userStickers
-    .filter(u => u.status === 'glued' && u.stickerId !== 28)
+    .filter(u => u.status === 'glued' && u.stickerId < 201)
     .map(u => u.stickerId);
 
   const UNIQUE_GLUED_COUNT = new Set(gluedStickerIds).size;
-  const TOTAL_STICKERS_COUNT = STICKERS.filter(s => s.id !== 28).length;
+  const TOTAL_STICKERS_COUNT = STICKERS.filter(s => s.id < 201).length;
 
   // Trigger full album completion celebration popup reward when percentage is 100%
   useEffect(() => {
@@ -533,10 +628,10 @@ export default function App() {
         setShowFullCompletionModal(true);
         localStorage.setItem('cepe_has_celebrated_full_completion_v1', 'true');
         
-        // Auto-glue/award SPC_4 (Sticker 28) to the user's stickers!
+        // Auto-glue/award SPC_5 (Sticker 205) to the user's stickers!
         setUserStickers(prev => {
-          if (!prev.some(u => u.stickerId === 28)) {
-            return [...prev, { stickerId: 28, status: 'glued', slotId: 'SPC_4' }];
+          if (!prev.some(u => u.stickerId === 205)) {
+            return [...prev, { stickerId: 205, status: 'glued', slotId: 'SPC_5' }];
           }
           return prev;
         });
@@ -559,7 +654,7 @@ export default function App() {
     }
   });
 
-  const benchStickers = STICKERS.filter(s => ![25, 26, 27].includes(s.id) && benchMap.has(s.id)).map(s => ({
+  const benchStickers = STICKERS.filter(s => ![201, 202, 203, 204, 205].includes(s.id) && benchMap.has(s.id)).map(s => ({
     sticker: s,
     count: benchMap.get(s.id) || 0
   }));
@@ -744,6 +839,7 @@ export default function App() {
             }}
             initialSelectedStickerId={selectedStickerFromBench}
             onClearSelectedStickerFromBench={() => setSelectedStickerFromBench(null)}
+            isVersoCompleted={isVersoCompleted}
           />
         )}
         {currentPage === 'bancada' && (
@@ -754,9 +850,11 @@ export default function App() {
             onGoToAlbum={(sticker) => {
               playPageFlip();
               if (sticker) {
-                let targetPageIndex: 0 | 1 | 2 | 3 = 0;
-                if (sticker.id >= 113) targetPageIndex = 3;
-                else if (sticker.id >= 101) targetPageIndex = 2;
+                let targetPageIndex = 0;
+                if (sticker.id >= 125) targetPageIndex = 5;
+                else if (sticker.id >= 113) targetPageIndex = 4;
+                else if (sticker.id >= 101) targetPageIndex = 3;
+                else if (sticker.id >= 25) targetPageIndex = 2;
                 else if (sticker.id >= 13) targetPageIndex = 1;
                 
                 setAlbumPageIndex(targetPageIndex);
@@ -787,6 +885,7 @@ export default function App() {
               playPageFlip();
               setCurrentPage('achievements');
             }}
+            onLineupCompletionChange={handleLineupCompletionChange}
           />
         )}
 
@@ -1046,7 +1145,7 @@ export default function App() {
                   <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                     <span className="text-[10px] text-slate-500 font-semibold">Escalação</span>
                     <span className="text-[12px] text-slate-900 font-extrabold capitalize">
-                      {celebrationPageName === 'titulares' ? 'Convocados 1' : 'Convocados 2'}
+                      {celebrationPageName === 'titulares' ? 'Convocados 1' : celebrationPageName === 'reservas' ? 'Convocados 2' : celebrationPageName === 'verso' ? 'Time dos Sonhos' : 'Convocados 3'}
                     </span>
                   </div>
 
@@ -1130,11 +1229,11 @@ export default function App() {
               />
             </div>
 
-            {/* Glowing Showcase of Cromo Lendário SPC_4 */}
+            {/* Glowing Showcase of Cromo Lendário SPC_5 - CAMPEÃO SUPREMO */}
             <div className="relative p-1 bg-gradient-to-tr from-yellow-500 via-amber-300 to-yellow-600 rounded-[20px] shadow-2xl scale-75 my-0.5">
               <div className="absolute -inset-1 bg-yellow-400 rounded-[24px] blur-xs opacity-70 animate-pulse" />
               <StickerItem
-                sticker={STICKERS.find(s => s.id === 28)!}
+                sticker={STICKERS.find(s => s.id === 205)!}
                 size="sm"
                 isGlued={true}
                 className="relative border-4 border-slate-950 shadow-2xl"

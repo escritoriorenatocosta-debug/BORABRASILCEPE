@@ -47,6 +47,7 @@ interface AlbumBackProps {
   onTitleImageChange: (image: string | null) => void;
   onOpenVideo?: () => void;
   onViewAchievements: () => void;
+  onLineupCompletionChange?: (isComplete: boolean) => void;
 }
 
 type FormationType = '433' | '442' | '352' | '4231';
@@ -127,7 +128,8 @@ export default function AlbumBack({
   titleImage,
   onTitleImageChange,
   onOpenVideo,
-  onViewAchievements
+  onViewAchievements,
+  onLineupCompletionChange
 }: AlbumBackProps) {
   const totalCount = STICKERS.length;
   const gluedCount = gluedStickerIds.length;
@@ -234,7 +236,9 @@ export default function AlbumBack({
     try {
       localStorage.setItem(LINEUP_STORAGE_KEY, JSON.stringify(lineup));
     } catch (_) {}
-  }, [lineup]);
+    const isLineupComplete = Object.values(lineup).length === 11 && Object.values(lineup).every(val => val !== null);
+    onLineupCompletionChange?.(isLineupComplete);
+  }, [lineup, onLineupCompletionChange]);
 
   const handleSetFormation = (f: FormationType) => {
     setFormation(f);
