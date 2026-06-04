@@ -205,6 +205,30 @@ export default function AlbumBack({
   const [showConfirmResetAlbum, setShowConfirmResetAlbum] = useState(false);
   const [lineupPreviewUrl, setLineupPreviewUrl] = useState<string | null>(null);
 
+  // Coach states
+  const [selectedCoachId, setSelectedCoachId] = useState<number | null>(() => {
+    try {
+      const stored = localStorage.getItem('cepe_dream_team_coach_id_v2');
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (parsed >= 37 && parsed <= 48) return parsed;
+      }
+    } catch (_) {}
+    return null;
+  });
+  const [coachSearchTerm, setCoachSearchTerm] = useState('');
+  const [isCoachDropdownOpen, setIsCoachDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (selectedCoachId !== null) {
+        localStorage.setItem('cepe_dream_team_coach_id_v2', selectedCoachId.toString());
+      } else {
+        localStorage.removeItem('cepe_dream_team_coach_id_v2');
+      }
+    } catch (_) {}
+  }, [selectedCoachId]);
+
   const [lineup, setLineup] = useState<Record<number, number | null>>(() => {
     try {
       const stored = localStorage.getItem(LINEUP_STORAGE_KEY);
@@ -408,6 +432,13 @@ export default function AlbumBack({
   // Count filled positions
   const filledCount = Object.values(lineup).filter(id => id !== null).length;
 
+  // Filter coaches
+  const legendCoaches = STICKERS.filter(s => s.id >= 37 && s.id <= 48);
+  const filteredCoaches = legendCoaches.filter(c => 
+    c.name.toLowerCase().includes(coachSearchTerm.toLowerCase()) ||
+    c.role.toLowerCase().includes(coachSearchTerm.toLowerCase())
+  );
+
   return (
     <div 
       style={{ backgroundColor: '#ba2078' }}
@@ -525,11 +556,159 @@ export default function AlbumBack({
                 </div>
               </div>
 
+              {/* COACH SELECTOR SECTION */}
+              <div 
+                style={{ backgroundColor: '#a10494' }}
+                className="p-4 rounded-[20px] border-3 border-slate-950 space-y-3 font-sans relative"
+              >
+                <span className="text-white font-extrabold text-xs block uppercase tracking-wide text-center">TÉCNICO DA SELEÇÃO</span>
+                
+                {/* Search Dropdown Selector */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="coach-search-input"
+                    placeholder="Escolher técnico"
+                    value={coachSearchTerm}
+                    onChange={(e) => {
+                      setCoachSearchTerm(e.target.value);
+                      setIsCoachDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsCoachDropdownOpen(true)}
+                    style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-800 text-xs focus:outline-none focus:border-yellow-400 font-extrabold placeholder-slate-400 shadow-sm"
+                  />
+                  {coachSearchTerm && (
+                    <button
+                      onClick={() => setCoachSearchTerm('')}
+                      className="absolute right-2 top-2 text-slate-500 hover:text-white text-xs font-bold"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  
+                  {isCoachDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-20 cursor-default" 
+                        onClick={() => setIsCoachDropdownOpen(false)}
+                      />
+                      <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-slate-900 border-2 border-slate-800 rounded-lg z-30 shadow-2xl divide-y divide-slate-800/40">
+                        {filteredCoaches.length > 0 ? (
+                          filteredCoaches.map((coach) => {
+                            const isUnlocked = gluedStickerIds.includes(coach.id);
+                            return (
+                              <button
+                                key={coach.id}
+                                onClick={() => {
+                                  setSelectedCoachId(coach.id);
+                                  setCoachSearchTerm('');
+                                  setIsCoachDropdownOpen(false);
+                                  playSuccess();
+                                }}
+                                style={{ color: '#810c80', backgroundColor: '#ffb500' }}
+                                className="w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:brightness-105 active:scale-[0.99] transition-all font-medium border-b border-purple-800/20"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-extrabold text-[#810c80]">{coach.name}</span>
+                                  <span className="text-[10px] text-[#810c80]/85">{coach.role}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[9px]">
+                                  {isUnlocked ? (
+                                    <span style={{ color: '#ffffff' }} className="bg-[#810c80] px-2 py-0.5 rounded font-bold">✓ Colada</span>
+                                  ) : (
+                                    <span style={{ color: '#ffffff' }} className="bg-[#810c80]/60 px-2 py-0.5 rounded font-medium">🔒 Bloqueada</span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="px-3 py-2.5 text-xs text-slate-500 font-medium text-center">
+                            Nenhuma figura lendária encontrada
+                          </div>
+                        )}
+                        
+                        {selectedCoachId !== null && (
+                          <button
+                            onClick={() => {
+                              setSelectedCoachId(null);
+                              setCoachSearchTerm('');
+                              setIsCoachDropdownOpen(false);
+                              playSuccess();
+                            }}
+                            className="w-full text-center px-3 py-2 text-xs text-red-400 hover:bg-slate-800 font-bold bg-slate-950/40"
+                          >
+                            Remover Técnico
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Coach card slot - Espaço para essa imagem */}
+                <div className="flex flex-col items-center justify-center pt-1">
+                  {selectedCoachId ? (
+                    (() => {
+                      const coachSticker = STICKERS.find(s => s.id === selectedCoachId);
+                      if (!coachSticker) return null;
+                      const isUnlocked = gluedStickerIds.includes(selectedCoachId);
+
+                      return (
+                        <div className="flex flex-col items-center gap-1.5 animate-scale-in">
+                          <div className="relative w-[110px] h-[145px] rounded-xl overflow-hidden border-2 border-yellow-400 shadow-lg bg-zinc-950">
+                            <StickerItem
+                              sticker={coachSticker}
+                              isGlued={isUnlocked}
+                              size="sm"
+                              className="w-full h-full object-cover"
+                            />
+                            {!isUnlocked && (
+                              <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center p-1 text-center select-none pointer-events-none">
+                                <Lock className="w-4 h-4 text-yellow-500 mb-0.5" />
+                                <span className="text-[8px] text-yellow-500 font-black uppercase tracking-wider block">
+                                  Bloqueada
+                                </span>
+                                <span className="text-[7px] text-slate-400 font-semibold block leading-tight">
+                                   Não colada no álbum
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="text-center font-sans">
+                            <span className="text-[11px] text-[#FFDF1B] font-extrabold uppercase tracking-wide block">
+                              {coachSticker.name}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <button
+                      onClick={() => setIsCoachDropdownOpen(true)}
+                      className="w-[110px] h-[145px] rounded-xl border-2 border-dashed border-slate-800 hover:border-yellow-400/80 bg-slate-900/40 hover:bg-yellow-400/5 active:bg-yellow-400/15 transition-all flex flex-col items-center justify-center text-center p-2 gap-1 group font-sans relative shadow-inner"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-yellow-500 group-hover:scale-110 transition-transform">
+                        +
+                      </div>
+                      <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider block leading-none">
+                        Sem Técnico
+                      </span>
+                      <span className="text-[7px] text-slate-500 font-semibold leading-tight block max-w-[85px]">
+                        Toque para selecionar
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
                {/* SPECIAL REWARD GOLD KEY/CROMO (HORIZONTAL FORMAT) */}
-              {filledCount === 11 ? (
+              {(filledCount === 11 || localStorage.getItem('cepe_celebrated_page4') === 'true') ? (
                 /* GLUED SHINY HORIZONTAL SPECIAL STICKER */
                 <StickerItem
-                  sticker={STICKERS.find(s => s.id === 27)!}
+                  sticker={STICKERS.find(s => s.id === 204)!}
                   isGlued={true}
                   className="mx-auto animate-zoom-fade-in" 
                   style={{ width: '180px', height: '250px' }}
@@ -666,128 +845,230 @@ export default function AlbumBack({
           {/* RIGHT PAGE: Vertical Soccer Pitch carrying centered responsive coordinate player grid */}
           <div className={`${isLeftCollapsed ? 'lg:col-span-11' : 'lg:col-span-7'} flex flex-col justify-center items-center transition-all duration-500`}>
             
-            {/* Aspect Locked Pitch Container Frame */}
+            {/* Aspect Locked Pitch Container Frame AND the Escalation List underneath inside the same captured element */}
             <div 
               id="my-dream-team-pitch-spread"
-              className="relative w-full aspect-[0.74] sm:aspect-[0.75] md:aspect-[0.76] bg-[#124227] rounded-2.5xl overflow-hidden border-2 border-green-200/20 shadow-2xl p-0.5 print:bg-[#124227]"
+              className="w-full bg-[#0c2417] rounded-3xl p-3 flex flex-col gap-3 border-2 border-emerald-500/20 shadow-2xl"
             >
-              
-              {/* Rich Real Soccer Grass stripes background layout */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#1b6a3c] to-[#0e311a] opacity-95 z-0" />
-              
-              {/* Vertical grass cut contrasts */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none z-0 opacity-15">
-                {[...Array(10)].map((_, i) => (
-                  <div key={i} className={`h-[10%] w-full ${i % 2 === 0 ? 'bg-black' : 'bg-transparent'}`} />
-                ))}
-              </div>
-
-              {/* Sharp vector graphics for Pitch Lines overlay */}
-              <svg className="absolute inset-0 w-full h-full stroke-white/20 stroke-[1.5] fill-none z-10 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {/* Boundary */}
-                <rect x="3" y="3" width="94" height="94" className="stroke-white/25" />
+              {/* Soccer Pitch Container */}
+              <div 
+                className="relative w-full aspect-[0.74] sm:aspect-[0.75] md:aspect-[0.76] bg-[#124227] rounded-2.5xl overflow-hidden border border-green-200/20 p-0.5 print:bg-[#124227]"
+              >
                 
-                {/* Center circle & line */}
-                <line x1="3" y1="50" x2="97" y2="50" className="stroke-white/25" strokeDasharray="1.5 1.5" />
-                <circle cx="50" cy="50" r="14" className="stroke-white/25" />
-                <circle cx="50" cy="50" r="0.8" fill="rgba(255,255,255,0.4)" />
+                {/* Rich Real Soccer Grass stripes background layout */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1b6a3c] to-[#0e311a] opacity-95 z-0" />
+                
+                {/* Vertical grass cut contrasts */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none z-0 opacity-15">
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className={`h-[10%] w-full ${i % 2 === 0 ? 'bg-black' : 'bg-transparent'}`} />
+                  ))}
+                </div>
 
-                {/* Top Goal Area (Attack half) */}
-                <rect x="24" y="3" width="52" height="15" className="stroke-white/25" />
-                <rect x="34" y="3" width="32" height="5" className="stroke-white/15" />
-                <circle cx="50" cy="11" r="0.6" fill="rgba(255,255,255,0.3)" />
-                <path d="M 37 18 Q 50 24 63 18" className="stroke-white/30" />
+                {/* Sharp vector graphics for Pitch Lines overlay */}
+                <svg className="absolute inset-0 w-full h-full stroke-white/20 stroke-[1.5] fill-none z-10 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {/* Boundary */}
+                  <rect x="3" y="3" width="94" height="94" className="stroke-white/25" />
+                  
+                  {/* Center circle & line */}
+                  <line x1="3" y1="50" x2="97" y2="50" className="stroke-white/25" strokeDasharray="1.5 1.5" />
+                  <circle cx="50" cy="50" r="14" className="stroke-white/25" />
+                  <circle cx="50" cy="50" r="0.8" fill="rgba(255,255,255,0.4)" />
 
-                {/* Bottom Goal Area (Defense half) */}
-                <rect x="24" y="82" width="52" height="15" className="stroke-white/25" />
-                <rect x="34" y="92" width="32" height="5" className="stroke-white/15" />
-                <circle cx="50" cy="89" r="0.6" fill="rgba(255,255,255,0.3)" />
-                <path d="M 37 82 Q 50 76 63 82" className="stroke-white/30" />
+                  {/* Top Goal Area (Attack half) */}
+                  <rect x="24" y="3" width="52" height="15" className="stroke-white/25" />
+                  <rect x="34" y="3" width="32" height="5" className="stroke-white/15" />
+                  <circle cx="50" cy="11" r="0.6" fill="rgba(255,255,255,0.3)" />
+                  <path d="M 37 18 Q 50 24 63 18" className="stroke-white/30" />
 
-                {/* Corner Arcs */}
-                <path d="M 3 7 A 4 4 0 0 0 7 3" className="stroke-white/15" />
-                <path d="M 93 3 A 4 4 0 0 0 97 7" className="stroke-white/15" />
-                <path d="M 7 97 A 4 4 0 0 0 3 93" className="stroke-white/15" />
-                <path d="M 97 93 A 4 4 0 0 0 93 97" className="stroke-white/15" />
-              </svg>
+                  {/* Bottom Goal Area (Defense half) */}
+                  <rect x="24" y="82" width="52" height="15" className="stroke-white/25" />
+                  <rect x="34" y="92" width="32" height="5" className="stroke-white/15" />
+                  <circle cx="50" cy="89" r="0.6" fill="rgba(255,255,255,0.3)" />
+                  <path d="M 37 82 Q 50 76 63 82" className="stroke-white/30" />
 
-              {/* Pitch Identity Exporter Branding Labels */}
-              {/* Labels removed as per user request */}
+                  {/* Corner Arcs */}
+                  <path d="M 3 7 A 4 4 0 0 0 7 3" className="stroke-white/15" />
+                  <path d="M 93 3 A 4 4 0 0 0 97 7" className="stroke-white/15" />
+                  <path d="M 7 97 A 4 4 0 0 0 3 93" className="stroke-white/15" />
+                  <path d="M 97 93 A 4 4 0 0 0 93 97" className="stroke-white/15" />
+                </svg>
+
+                {/* Pitch Identity Exporter Branding Labels */}
+                {/* Labels removed as per user request */}
 
 
-              <div className="absolute bottom-2 right-4 z-25 text-[6.5px] font-mono text-white/30 select-none pointer-events-none">
-                BORA BRASIL ALBUM ENGINE
+                <div className="absolute bottom-2 right-4 z-25 text-[6.5px] font-mono text-white/30 select-none pointer-events-none">
+                  BORA BRASIL ALBUM ENGINE
+                </div>
+
+                {/* Dynamic 11 Coordinate Positions */}
+                {activePosDefs.map((pos, idx) => {
+                  const assignedId = lineup[idx];
+                  const sticker = assignedId ? STICKERS.find(s => s.id === assignedId) : null;
+
+                  return (
+                    <div
+                      key={idx}
+                      className="absolute z-20 transition-all duration-500 ease-out transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+                      style={{
+                        left: `${pos.left}%`,
+                        top: `${pos.top}%`,
+                      }}
+                    >
+                      {sticker ? (
+                        /* ASSIGNED POSITION STICKER LAYOUT */
+                        <div 
+                          onClick={() => setSelectedPositionIdx(idx)}
+                          className="relative hover:scale-110 active:scale-95 transition-all w-[79px] h-[102px] filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]"
+                          title="Toque para substituir ou desconvocar este jogador"
+                        >
+                          <StickerItem
+                            sticker={sticker}
+                            size="sm"
+                            isGlued={true}
+                            className="w-full pointer-events-none rounded-lg border-2 border-yellow-400 rotate-[-1deg]"
+                          />
+                          
+                          {/* Custom visual mini overlay role badge on player on the field */}
+                          <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-emerald-950 font-black text-[6.5px] px-1.5 py-0.5 rounded-full uppercase shadow border border-emerald-900 pointer-events-none group-hover:scale-110 transition-transform">
+                            {pos.role}
+                          </div>
+                        </div>
+                      ) : (
+                        /* VACANT/EMPTY DOTTED PLAYER SLOT BUTTON */
+                        <button
+                          onClick={() => setSelectedPositionIdx(idx)}
+                          className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed hover:border-yellow-400/80 bg-black/35 hover:bg-yellow-400/10 active:bg-yellow-400/25 transition-all text-center group font-sans relative shadow-inner"
+                          style={{
+                            color: '#ff00db',
+                            borderColor: '#e900ff',
+                            width: '79px',
+                            height: '102px'
+                          }}
+                          title={`Escale um jogador para: ${pos.label}`}
+                        >
+                          <div className="w-5 h-5 rounded-full bg-[#124227]/90 border border-yellow-400/30 flex items-center justify-center text-[10px] text-yellow-300 font-extrabold group-hover:scale-115 transition-all shadow-md">
+                            +
+                          </div>
+                          <span className="text-[6.5px] sm:text-[7.5px] font-mono text-yellow-300 uppercase tracking-wider font-extrabold block leading-none mt-1 group-hover:text-yellow-100 transition-colors">
+                            {pos.role}
+                          </span>
+                          
+                          <div className="absolute bottom-1 text-[5px] sm:text-[6px] text-emerald-300 font-medium tracking-tight opacity-75 truncate max-w-[90%] uppercase pointer-events-none">
+                            {pos.label}
+                          </div>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Coach card on Bench area */}
+                <div
+                  className="absolute z-20 transition-all duration-500 ease-out transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+                  style={{
+                    left: '14%',
+                    top: '86%',
+                  }}
+                  onClick={() => {
+                    setIsLeftCollapsed(false);
+                    setIsCoachDropdownOpen(true);
+                    const sInput = document.getElementById('coach-search-input');
+                    if (sInput) {
+                      sInput.focus();
+                      sInput.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  {selectedCoachId ? (
+                    (() => {
+                      const coachSticker = STICKERS.find(s => s.id === selectedCoachId);
+                      if (!coachSticker) return null;
+                      const isUnlocked = gluedStickerIds.includes(selectedCoachId);
+
+                      return (
+                        <div 
+                          className="relative hover:scale-110 active:scale-95 transition-all w-[65px] h-[84px] filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]"
+                          title={`Técnico da Seleção: ${coachSticker.name}. Toque para alterar.`}
+                        >
+                          <StickerItem
+                            sticker={coachSticker}
+                            size="sm"
+                            isGlued={isUnlocked}
+                            className="w-full pointer-events-none rounded-lg border-2 border-yellow-400 rotate-[1deg]"
+                          />
+                          <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-emerald-950 font-black text-[5.5px] px-1.5 py-0.5 rounded-full uppercase shadow border border-emerald-950 pointer-events-none group-hover:scale-110 transition-transform font-sans">
+                            TÉCNICO
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <button
+                      className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed hover:border-yellow-400/80 bg-black/35 hover:bg-yellow-400/10 active:bg-yellow-400/25 transition-all text-center group font-sans relative shadow-inner"
+                      style={{
+                        color: '#ff00db',
+                        borderColor: '#e900ff',
+                        width: '65px',
+                        height: '84px'
+                      }}
+                      title="Selecione o Técnico da sua Seleção"
+                    >
+                      <div className="w-4 h-4 rounded-full bg-[#124227]/90 border border-yellow-400/30 flex items-center justify-center text-[8px] text-yellow-300 font-extrabold group-hover:scale-115 transition-all shadow-md">
+                        +
+                      </div>
+                      <span className="text-[5.5px] font-mono text-yellow-300 uppercase tracking-wider font-extrabold block leading-none mt-1 group-hover:text-yellow-105 transition-colors">
+                        TÉCNICO
+                      </span>
+                      <div className="absolute bottom-1 text-[4.5px] text-emerald-300 font-medium tracking-tight opacity-75 truncate max-w-[90%] uppercase pointer-events-none">
+                        Escolher
+                      </div>
+                    </button>
+                  )}
+                </div>
+
               </div>
 
-              {/* Dynamic 11 Coordinate Positions */}
-              {activePosDefs.map((pos, idx) => {
-                const assignedId = lineup[idx];
-                const sticker = assignedId ? STICKERS.find(s => s.id === assignedId) : null;
-
-                return (
-                  <div
-                    key={idx}
-                    className="absolute z-20 transition-all duration-500 ease-out transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                    style={{
-                      left: `${pos.left}%`,
-                      top: `${pos.top}%`,
-                    }}
-                  >
-                    {sticker ? (
-                      /* ASSIGNED POSITION STICKER LAYOUT */
-                      <div 
-                        onClick={() => setSelectedPositionIdx(idx)}
-                        className="relative hover:scale-110 active:scale-95 transition-all w-[79px] h-[102px] filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]"
-                        title="Toque para substituir ou desconvocar este jogador"
-                      >
-                        <StickerItem
-                          sticker={sticker}
-                          size="sm"
-                          isGlued={true}
-                          className="w-full pointer-events-none rounded-lg border-2 border-yellow-400 rotate-[-1deg]"
-                        />
-                        
-                        {/* Custom visual mini overlay role badge on player on the field */}
-                        <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-emerald-950 font-black text-[6.5px] px-1.5 py-0.5 rounded-full uppercase shadow border border-emerald-900 pointer-events-none group-hover:scale-110 transition-transform">
-                          {pos.role}
-                        </div>
-                      </div>
-                    ) : (
-                      /* VACANT/EMPTY DOTTED PLAYER SLOT BUTTON */
-                      <button
-                        onClick={() => setSelectedPositionIdx(idx)}
-                        className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed hover:border-yellow-400/80 bg-black/35 hover:bg-yellow-400/10 active:bg-yellow-400/25 transition-all text-center group font-sans relative shadow-inner"
-                        style={{
-                          color: '#ff00db',
-                          borderColor: '#e900ff',
-                          width: '79px',
-                          height: '102px'
-                        }}
-                        title={`Escale um jogador para: ${pos.label}`}
-                      >
-                        <div className="w-5 h-5 rounded-full bg-[#124227]/90 border border-yellow-400/30 flex items-center justify-center text-[10px] text-yellow-300 font-extrabold group-hover:scale-115 transition-all shadow-md">
-                          +
-                        </div>
-                        <span className="text-[6.5px] sm:text-[7.5px] font-mono text-yellow-300 uppercase tracking-wider font-extrabold block leading-none mt-1 group-hover:text-yellow-100 transition-colors">
-                          {pos.role}
-                        </span>
-                        
-                        <div className="absolute bottom-1 text-[5px] sm:text-[6px] text-emerald-300 font-medium tracking-tight opacity-75 truncate max-w-[90%] uppercase pointer-events-none">
-                          {pos.label}
-                        </div>
-                      </button>
-                    )}
+              {/* Escalation/Line-up Player List (shared inside the generated photo) */}
+              <div className="w-full bg-[#124227]/40 rounded-2xl p-4 border border-emerald-500/20 font-sans relative">
+                {/* Header of Escalation */}
+                <div className="flex items-center justify-between border-b border-emerald-500/25 pb-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-400 font-black text-xs uppercase tracking-wider">Escalação Oficial</span>
+                    <span style={{ backgroundColor: '#72a33d' }} className="text-white text-[9.5px] px-2.5 py-0.5 rounded-full font-black uppercase">
+                      Esquema {formation.split('').join('-')}
+                    </span>
                   </div>
-                );
-              })}
+                  {selectedCoachId && (() => {
+                    const coach = STICKERS.find(s => s.id === selectedCoachId);
+                    return coach ? (
+                      <span className="text-[10px] text-emerald-300 font-medium">
+                        Técnico: <strong className="text-white uppercase font-black">{coach.name}</strong>
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
 
-            </div>
+                {/* Player Grid (2 columns on mobile, 3 columns on larger screens) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs">
+                  {activePosDefs.map((pos, idx) => {
+                    const assignedId = lineup[idx];
+                    const sticker = assignedId ? STICKERS.find(s => s.id === assignedId) : null;
+                    return (
+                      <div key={idx} className="flex items-center gap-1.5 border-b border-emerald-500/10 py-1">
+                        <span className="text-[9px] font-mono text-emerald-400 font-black uppercase min-w-[24px]">
+                          {pos.role}:
+                        </span>
+                        <span className={`text-[10.5px] font-black uppercase tracking-tight truncate ${sticker ? 'text-yellow-300' : 'text-emerald-300/30'}`}>
+                          {sticker ? sticker.name : "Vazio"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {/* Quick action warning help message specifically tailored */}
-            <div className="w-full mt-3 p-3 bg-emerald-900/20 rounded-xl border border-emerald-600/10 text-center">
-              <p style={{ color: '#ffffff' }} className="text-[10px] sm:text-xs">
-                ⭐ <span className="font-bold text-yellow-300">Dica do Treinador:</span> Monte, ajuste ou toque nos bonecos colados para alterar ou remover as posições a qualquer momento.
-              </p>
             </div>
 
           </div>

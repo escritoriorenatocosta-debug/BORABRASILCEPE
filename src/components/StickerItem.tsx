@@ -56,9 +56,9 @@ export default function StickerItem({
 
   // Helper to render customized visual SVG avatar representing the real players
   const renderSvgAvatar = (id: number) => {
-    // Standard stickers 1 to 36 and minicraques 101 to 136 use base player models 1 to 12
+    // Standard stickers 1 to 48 and minicraques 101 to 136 use base player models 1 to 12
     const resolvedId = (id >= 101 && id <= 136) ? (id - 100) : id;
-    const baseId = resolvedId <= 36 ? ((resolvedId - 1) % 12) + 1 : resolvedId;
+    const baseId = resolvedId <= 48 ? ((resolvedId - 1) % 12) + 1 : resolvedId;
 
     // Custom facial features matching the attached photos of the team
     let skinColor = '#efcbb4'; // Light-medium skin
@@ -468,7 +468,7 @@ export default function StickerItem({
               BRASIL
             </span>
             <div className="flex flex-col items-end leading-none">
-              <span className="text-[120%] font-black">{sticker.id <= 36 ? "26" : "★"}</span>
+              <span className="text-[120%] font-black">{sticker.id <= 48 ? "26" : "★"}</span>
               <span className="text-[60%] tracking-widest uppercase leading-none font-sans font-black">cepe</span>
             </div>
           </div>

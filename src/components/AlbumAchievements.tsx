@@ -23,9 +23,15 @@ export default function AlbumAchievements({
   // Filter for legendary/special stickers (SPC_1 to SPC_4 for top grid)
   const specialStickers = STICKERS.filter(s => [201, 202, 203, 204].includes(s.id));
   
-  const collectedSpecial = specialStickers.filter(special => 
-    userStickers.some(u => u.stickerId === special.id && u.status === 'glued')
-  );
+  const collectedSpecial = specialStickers.filter(special => {
+    const isGlued = userStickers.some(u => u.stickerId === special.id && u.status === 'glued');
+    if (isGlued) return true;
+    if (special.id === 201 && localStorage.getItem('cepe_celebrated_page1') === 'true') return true;
+    if (special.id === 202 && localStorage.getItem('cepe_celebrated_page2') === 'true') return true;
+    if (special.id === 203 && localStorage.getItem('cepe_celebrated_page3') === 'true') return true;
+    if (special.id === 204 && localStorage.getItem('cepe_celebrated_page4') === 'true') return true;
+    return false;
+  });
 
   return (
     <div className="max-w-4xl mx-auto w-full my-6 bg-[#af1d92] rounded-[32px] border-[6px] border-slate-950 p-6 sm:p-10 animate-fade-in relative">
@@ -93,14 +99,14 @@ export default function AlbumAchievements({
       {(() => {
         const spc5Sticker = STICKERS.find(s => s.id === 205);
         if (!spc5Sticker) return null;
-        const isCollected = userStickers.some(u => u.stickerId === 205 && u.status === 'glued');
+        const isCollected = userStickers.some(u => u.stickerId === 205 && u.status === 'glued') || localStorage.getItem('cepe_has_celebrated_full_completion_v1') === 'true';
 
         return (
           <div 
             className="my-8 flex flex-col items-center justify-center p-6 border-4 rounded-[28px] max-w-sm mx-auto shadow-2xl relative overflow-hidden text-center animate-fade-in ring-4 ring-yellow-400/20"
             style={{ 
               borderColor: isCollected ? '#ffd100' : '#475569', 
-              backgroundColor: isCollected ? '#0f172a' : '#1e293b' 
+              backgroundColor: '#ffffff' 
             }}
           >
             {isCollected ? (
@@ -136,7 +142,10 @@ export default function AlbumAchievements({
             >
               {spc5Sticker.name}
             </h3>
-            <p className="text-[11px] text-slate-300 mt-1 font-medium">
+            <p 
+              className="text-[11px] mt-1 font-medium text-slate-300"
+              style={{ color: '#0f0f0f' }}
+            >
               {isCollected 
                 ? 'Você se tornou o Campeão Supremo do CEPE!' 
                 : 'Complete 100% do Álbum para destravar'

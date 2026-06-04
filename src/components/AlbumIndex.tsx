@@ -12,8 +12,8 @@ import marcaMinicraques from '../assets/images/marca_MInicraques.png';
 interface AlbumIndexProps {
   currentPage: 'cover' | 'album' | 'back' | 'achievements' | 'minicraques' | 'bancada';
   setCurrentPage: (page: 'cover' | 'album' | 'back' | 'achievements' | 'minicraques' | 'bancada') => void;
-  albumPageIndex: 0 | 1 | 2 | 3;
-  setAlbumPageIndex: (index: 0 | 1 | 2 | 3) => void;
+  albumPageIndex: number;
+  setAlbumPageIndex: (index: number) => void;
   userStickers: UserSticker[];
 }
 
@@ -27,7 +27,7 @@ export default function AlbumIndex({
   const [isOpen, setIsOpen] = useState(false);
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
 
-  const navigateTo = (page: 'cover' | 'album' | 'back', innerIndex?: 0 | 1 | 2 | 3) => {
+  const navigateTo = (page: 'cover' | 'album' | 'back', innerIndex?: number) => {
     playPageFlip();
     setCurrentPage(page);
     if (innerIndex !== undefined) {
@@ -56,20 +56,38 @@ export default function AlbumIndex({
       onClick: () => navigateTo('album', 1)
     },
     {
-      id: 'especiais1',
-      title: 'Especiais 1',
+      id: 'convocados3',
+      title: 'Convocados 3',
       isActive: currentPage === 'album' && albumPageIndex === 2,
       onClick: () => navigateTo('album', 2)
     },
     {
-      id: 'especiais2',
-      title: 'Especiais 2',
+      id: 'especiais1',
+      title: 'Especiais 1',
       isActive: currentPage === 'album' && albumPageIndex === 3,
       onClick: () => navigateTo('album', 3)
     },
     {
+      id: 'especiais2',
+      title: 'Especiais 2',
+      isActive: currentPage === 'album' && albumPageIndex === 4,
+      onClick: () => navigateTo('album', 4)
+    },
+    {
+      id: 'especiais3',
+      title: 'Especiais 3',
+      isActive: currentPage === 'album' && albumPageIndex === 5,
+      onClick: () => navigateTo('album', 5)
+    },
+    {
+      id: 'legends',
+      title: 'The Legends',
+      isActive: currentPage === 'album' && albumPageIndex === 6,
+      onClick: () => navigateTo('album', 6)
+    },
+    {
       id: 'back',
-      title: 'Escalação',
+      title: 'Time dos sonhos',
       isActive: currentPage === 'back',
       onClick: () => navigateTo('back')
     }
@@ -225,7 +243,7 @@ export default function AlbumIndex({
             </div>
 
             {/* Menu Options List - Text Only, No Icons */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 max-h-[58vh] overflow-y-auto pr-1 select-none scrollbar-thin scrollbar-thumb-slate-950 scrollbar-track-transparent">
               {pages.map((p) => (
                 <button
                   key={p.id}

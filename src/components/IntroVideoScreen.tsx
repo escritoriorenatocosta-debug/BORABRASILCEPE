@@ -96,18 +96,12 @@ export default function IntroVideoScreen({ onComplete }: IntroVideoScreenProps) 
             <div className="absolute bottom-8 left-8 z-20">
               <button
                 onClick={toggleMute}
-                className="p-3 bg-black/60 hover:bg-white hover:text-black border border-white/20 text-white rounded-full transition-all duration-300 backdrop-blur-md cursor-pointer flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider"
+                className="p-3 bg-black/60 hover:bg-white hover:text-black border border-white/20 text-white rounded-full transition-all duration-300 backdrop-blur-md cursor-pointer flex items-center justify-center"
               >
                 {isMuted ? (
-                  <>
-                    <VolumeX className="w-5 h-5 text-[#e21b3c]" />
-                    <span className="pr-1">Ativar Som</span>
-                  </>
+                  <VolumeX className="w-5 h-5 text-[#e21b3c]" />
                 ) : (
-                  <>
-                    <Volume2 className="w-5 h-5 text-[#8cc63f]" />
-                    <span className="pr-1">Mudar Som</span>
-                  </>
+                  <Volume2 className="w-5 h-5 text-[#8cc63f]" />
                 )}
               </button>
             </div>

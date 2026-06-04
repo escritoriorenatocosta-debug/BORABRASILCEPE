@@ -239,6 +239,384 @@ const WORLD_SOCCER_QUESTIONS: QuizQuestion[] = [
     question: "Quem marcou o icônico gol de falta encobrindo o goleiro Seaman contra a Inglaterra em 2002?",
     options: ["Ronaldo", "Ronaldinho Gaúcho", "Rivaldo"],
     correct: "Ronaldinho Gaúcho"
+  },
+  {
+    id: 38,
+    question: "Qual jogador detém o recorde de mais gols marcados em uma única edição de Copa do Mundo masculina?",
+    options: ["Pelé", "Just Fontaine", "Miroslav Klose"],
+    correct: "Just Fontaine"
+  },
+  {
+    id: 39,
+    question: "Qual seleção europeia conquistou a Copa do Mundo masculina de 2010?",
+    options: ["Espanha", "Holanda", "Alemanha"],
+    correct: "Espanha"
+  },
+  {
+    id: 40,
+    question: "Qual país ganhou mais vezes a Copa do Mundo Feminina da FIFA?",
+    options: ["Alemanha", "Estados Unidos", "Brasil"],
+    correct: "Estados Unidos"
+  },
+  {
+    id: 41,
+    question: "Quem é a única pessoa a vencer a Copa do Mundo como jogador e treinador em mais de duas edições?",
+    options: ["Mário Zagallo", "Franz Beckenbauer", "Didier Deschamps"],
+    correct: "Mário Zagallo"
+  },
+  {
+    id: 42,
+    question: "Qual seleção ficou conhecida como 'Squadra Azzurra' e conquistou o tetracampeonato em 2006?",
+    options: ["França", "Alemanha", "Itália"],
+    correct: "Itália"
+  },
+  {
+    id: 43,
+    question: "Qual país foi o anfitrião da Copa do Mundo Masculina de 2018?",
+    options: ["Alemanha", "Brasil", "Rússia"],
+    correct: "Rússia"
+  },
+  {
+    id: 44,
+    question: "Qual das seguintes seleções nunca conquistou uma Copa do Mundo masculina?",
+    options: ["Espanha", "França", "Holanda"],
+    correct: "Holanda"
+  },
+  {
+    id: 45,
+    question: "Qual jogador italiano ficou famoso por falhar o último pênalti na final da Copa do Mundo de 1994?",
+    options: ["Roberto Baggio", "Franco Baresi", "Gianluca Pagliuca"],
+    correct: "Roberto Baggio"
+  },
+  {
+    id: 46,
+    question: "Em qual país aconteceu a Copa do Mundo de 1982, vencida pela Itália?",
+    options: ["México", "Espanha", "Argentina"],
+    correct: "Espanha"
+  },
+  {
+    id: 47,
+    question: "Qual estádio sediou a final da Copa do Mundo de 2014 no Brasil?",
+    options: ["Maracanã", "Arena Corinthians", "Mineirão"],
+    correct: "Maracanã"
+  },
+  {
+    id: 48,
+    question: "Qual goleiro ficou conhecido pelo apelido de 'Aranha Negra' na história do futebol?",
+    options: ["Gianluigi Buffon", "Lev Yashin", "Oliver Kahn"],
+    correct: "Lev Yashin"
+  },
+  {
+    id: 49,
+    question: "Qual país africano foi o primeiro a chegar às quartas de final de uma Copa do Mundo em 1990?",
+    options: ["Camarões", "Nigéria", "Senegal"],
+    correct: "Camarões"
+  },
+  {
+    id: 50,
+    question: "Quem é o jogador mais jovem a marcar um gol na história das Copas do Mundo masculinas?",
+    options: ["Pelé", "Kylian Mbappé", "Lionel Messi"],
+    correct: "Pelé"
+  },
+  {
+    id: 51,
+    question: "Quantas seleções participaram da fase final da Copa do Mundo de 2022 no Catar?",
+    options: ["24 seleções", "32 seleções", "48 seleções"],
+    correct: "32 seleções"
+  },
+  {
+    id: 52,
+    question: "Quem é o maior artilheiro da história da seleção brasileira de futebol masculino oficial (critérios FIFA)?",
+    options: ["Pelé", "Ronaldo Fenômeno", "Neymar"],
+    correct: "Neymar"
+  },
+  {
+    id: 53,
+    question: "Qual país conquistou a Copa do Mundo masculina de 1998 jogando em casa?",
+    options: ["Itália", "França", "Alemanha"],
+    correct: "França"
+  },
+  {
+    id: 54,
+    question: "Qual jogador francês foi expulso na final da Copa de 2006 por dar uma cabeçada em Materazzi?",
+    options: ["Thierry Henry", "Patrick Vieira", "Zinedine Zidane"],
+    correct: "Zinedine Zidane"
+  },
+  {
+    id: 55,
+    question: "Qual era o nome da taça original da Copa do Mundo que foi roubada e derretida no Brasil?",
+    options: ["Taça Jules Rimet", "Taça FIFA", "Taça Libertadores"],
+    correct: "Taça Jules Rimet"
+  },
+  {
+    id: 56,
+    question: "Qual seleção é conhecida mundialmente pelo apelido de 'Albiceleste'?",
+    options: ["Uruguai", "Grécia", "Argentina"],
+    correct: "Argentina"
+  },
+  {
+    id: 57,
+    question: "Quem foi o artilheiro da Copa do Mundo de 2002 na Ásia com 8 gols marcados?",
+    options: ["Rivaldo", "Ronaldo Fenômeno", "Miroslav Klose"],
+    correct: "Ronaldo Fenômeno"
+  },
+  {
+    id: 58,
+    question: "Qual país sediou a Copa do Mundo masculina de 1994?",
+    options: ["França", "Estados Unidos", "Itália"],
+    correct: "Estados Unidos"
+  },
+  {
+    id: 59,
+    question: "Qual seleção europeia conquistou a Copa do Mundo de 1966 jogando em casa?",
+    options: ["Inglaterra", "Alemanha", "Itália"],
+    correct: "Inglaterra"
+  },
+  {
+    id: 60,
+    question: "Qual jogador uruguaio foi o destaque e eleito o melhor jogador da Copa do Mundo de 2010?",
+    options: ["Luis Suárez", "Diego Forlán", "Edinson Cavani"],
+    correct: "Diego Forlán"
+  },
+  {
+    id: 61,
+    question: "Qual país sediou a Copa do Mundo masculina em 1950, marcada pela derrota do Brasil na final?",
+    options: ["França", "Uruguai", "Brasil"],
+    correct: "Brasil"
+  },
+  {
+    id: 62,
+    question: "Quem era o goleiro titular e um dos grandes heróis da Seleção Brasileira na Copa do Mundo de 1994?",
+    options: ["Zetti", "Taffarel", "Marcos"],
+    correct: "Taffarel"
+  },
+  {
+    id: 63,
+    question: "O que significa a sigla 'FIFA'?",
+    options: ["Federação Internacional de Futebol Associado", "Federação Integrada de Futebol Amador", "Federação Internacional de Federações Aliadas"],
+    correct: "Federação Internacional de Futebol Associado"
+  },
+  {
+    id: 64,
+    question: "Qual jogador marcou três gols (hat-trick) na grande final da Copa do Mundo de 2022?",
+    options: ["Kylian Mbappé", "Lionel Messi", "Antoine Griezmann"],
+    correct: "Kylian Mbappé"
+  },
+  {
+    id: 65,
+    question: "Qual país sediou a Copa do Mundo masculina de 2006?",
+    options: ["França", "Alemanha", "África do Sul"],
+    correct: "Alemanha"
+  },
+  {
+    id: 66,
+    question: "Em qual clube Lionel Messi jogou a maior parte de sua carreira profissional nas categorias de base e profissional?",
+    options: ["Paris Saint-Germain", "Barcelona", "Inter Miami"],
+    correct: "Barcelona"
+  },
+  {
+    id: 67,
+    question: "Qual jogador de futebol ficou conhecido mundialmente pelo apelido de 'El Pibe de Oro'?",
+    options: ["Diego Maradona", "Lionel Messi", "Alfredo Di Stéfano"],
+    correct: "Diego Maradona"
+  },
+  {
+    id: 68,
+    question: "Quantas Copas do Mundo a Itália possui atualmente no futebol masculino?",
+    options: ["3 títulos", "4 títulos", "5 títulos"],
+    correct: "4 títulos"
+  },
+  {
+    id: 69,
+    question: "Qual país organizou a Copa do Mundo masculina de 1986 após a desistência da Colômbia?",
+    options: ["México", "Espanha", "Argentina"],
+    correct: "México"
+  },
+  {
+    id: 70,
+    question: "Quem é reconhecido como o maior cobrador de faltas em número de gols da história do futebol mundial?",
+    options: ["Ronaldinho Gaúcho", "David Beckham", "Juninho Pernambucano"],
+    correct: "Juninho Pernambucano"
+  },
+  {
+    id: 71,
+    question: "Em qual país nasceu o astro do futebol mundial Cristiano Ronaldo?",
+    options: ["Brasil", "Portugal", "Espanha"],
+    correct: "Portugal"
+  },
+  {
+    id: 72,
+    question: "Qual seleção asiática surpreendeu o mundo chegando à semifinal da Copa do Mundo de 2002?",
+    options: ["Japão", "Coreia do Sul", "Arábia Saudita"],
+    correct: "Coreia do Sul"
+  },
+  {
+    id: 73,
+    question: "Qual animal foi o mascote oficial da Copa do Mundo de 2014 realizada no Brasil?",
+    options: ["Tatu-bola", "Arara-azul", "Onça-pintada"],
+    correct: "Tatu-bola"
+  },
+  {
+    id: 74,
+    question: "O mascote 'Striker', da Copa do Mundo de 1994 nos Estados Unidos, era qual animal?",
+    options: ["Águia", "Cachorro", "Leão"],
+    correct: "Cachorro"
+  },
+  {
+    id: 75,
+    question: "Quantas Copas do Mundo a França conquistou no futebol masculino até hoje?",
+    options: ["1 título", "2 títulos", "3 títulos"],
+    correct: "2 títulos"
+  },
+  {
+    id: 76,
+    question: "Qual país sediou a pioneira primeira edição da Copa do Mundo da FIFA em 1930?",
+    options: ["Uruguai", "Argentina", "França"],
+    correct: "Uruguai"
+  },
+  {
+    id: 77,
+    question: "Qual jogador é amplamente conhecido pelo carinhoso apelido de 'Bruxo' pelas suas jogadas geniais?",
+    options: ["Ronaldinho Gaúcho", "Neymar Jr", "Garrincha"],
+    correct: "Ronaldinho Gaúcho"
+  },
+  {
+    id: 78,
+    question: "Qual país conquistou a Copa do Mundo masculina de 1954 no episódio conhecido como 'Milagre de Berna'?",
+    options: ["Hungria", "Alemanha Ocidental", "Suíça"],
+    correct: "Alemanha Ocidental"
+  },
+  {
+    id: 79,
+    question: "Qual goleiro espanhol fez uma defesa milagrosa cara a cara com Robben na final da Copa de 2010?",
+    options: ["Iker Casillas", "Victor Valdés", "Pepe Reina"],
+    correct: "Iker Casillas"
+  },
+  {
+    id: 80,
+    question: "Qual país africano alcançou o melhor resultado histórico do continente chegando às semifinais em 2022?",
+    options: ["Senegal", "Camarões", "Marrocos"],
+    correct: "Marrocos"
+  },
+  {
+    id: 81,
+    question: "Quem é o jogador argentino com maior número de gols pela sua seleção em Copas do Mundo masculinas?",
+    options: ["Diego Maradona", "Lionel Messi", "Gabriel Batistuta"],
+    correct: "Lionel Messi"
+  },
+  {
+    id: 82,
+    question: "Qual clube de futebol do Brasil foi responsável por revelar o Rei Pelé para o esporte?",
+    options: ["Santos FC", "Vasco da Gama", "São Paulo FC"],
+    correct: "Santos FC"
+  },
+  {
+    id: 83,
+    question: "Em qual cidade e estádio brasileiro aconteceu o jogo de abertura da Copa do Mundo de 2014?",
+    options: ["Rio de Janeiro (Maracanã)", "São Paulo (Arena Corinthians)", "Salvador (Arena Fonte Nova)"],
+    correct: "São Paulo (Arena Corinthians)"
+  },
+  {
+    id: 84,
+    question: "Quantos minutos de duração regular possui um jogo completo de futebol oficial, excluindo os acréscimos?",
+    options: ["80 minutos", "90 minutos", "100 minutos"],
+    correct: "90 minutos"
+  },
+  {
+    id: 85,
+    question: "Qual seleção do futebol europeu é tradicionalmente conhecida pelo carinhoso apelido de 'A Fúria'?",
+    options: ["Espanha", "Portugal", "Itália"],
+    correct: "Espanha"
+  },
+  {
+    id: 86,
+    question: "Quem é o maior artilheiro em um único jogo de Copa do Mundo masculina com 5 gols marcados em 1994?",
+    options: ["Oleg Salenko", "Hristo Stoichkov", "Roger Milla"],
+    correct: "Oleg Salenko"
+  },
+  {
+    id: 87,
+    question: "Quem foi o gênio parceiro de Pelé na conquista das Copas de 1958 e 1962, eleito herói em 1962?",
+    options: ["Didi", "Garrincha", "Vavá"],
+    correct: "Garrincha"
+  },
+  {
+    id: 88,
+    question: "Qual jogador brasileiro marcou gols em absolutamente todas as partidas da campanha do Tri em 1970?",
+    options: ["Tostão", "Pelé", "Jairzinho"],
+    correct: "Jairzinho"
+  },
+  {
+    id: 89,
+    question: "Quem é reconhecido na história como o 'Pai do futebol brasileiro' por trazer a primeira bola e regras ao país?",
+    options: ["Charles Miller", "Oscar Cox", "Arthur Friedenreich"],
+    correct: "Charles Miller"
+  },
+  {
+    id: 90,
+    question: "Em qual país de futebol tradicional foi disputada a segunda Copa do Mundo da história em 1934?",
+    options: ["França", "Itália", "Uruguai"],
+    correct: "Itália"
+  },
+  {
+    id: 91,
+    question: "Qual seleção sul-americana conquistou sua primeira Copa do Mundo em 1978 jogando como país anfitrião?",
+    options: ["Chile", "Brasil", "Argentina"],
+    correct: "Argentina"
+  },
+  {
+    id: 92,
+    question: "Qual goleira norte-americana é mundialmente reconhecida como uma das maiores jogadoras da história do esporte?",
+    options: ["Hope Solo", "Briana Scurry", "Megan Rapinoe"],
+    correct: "Hope Solo"
+  },
+  {
+    id: 93,
+    question: "Após as recentes atualizações da FIFA, quantas substituições de jogadores uma equipe pode realizar por partida normal?",
+    options: ["3 substituições", "4 substituições", "5 substituições"],
+    correct: "5 substituições"
+  },
+  {
+    id: 94,
+    question: "Qual país da Europa sediou a Copa do Mundo masculina de 1990?",
+    options: ["Itália", "França", "Espanha"],
+    correct: "Itália"
+  },
+  {
+    id: 95,
+    question: "Qual jogadora da Seleção Brasileira Feminina é lendária pelo recorde histórico de maior número de Copas e Olimpíadas disputadas?",
+    options: ["Marta", "Formiga", "Cristiane"],
+    correct: "Formiga"
+  },
+  {
+    id: 96,
+    question: "Qual é a largura oficial regulamentar de uma trave de futebol profissional de uma trave à outra?",
+    options: ["7,15 metros", "7,32 metros", "7,50 metros"],
+    correct: "7,32 metros"
+  },
+  {
+    id: 97,
+    question: "Qual seleção sul-americana de futebol é amplamente referida em todo o continente como 'La Celeste'?",
+    options: ["Uruguai", "Argentina", "Paraguai"],
+    correct: "Uruguai"
+  },
+  {
+    id: 98,
+    question: "Qual país é famoso pela criação do sistema tático defensivo feroz conhecido como 'Catenaccio'?",
+    options: ["Alemanha", "Itália", "Suíça"],
+    correct: "Itália"
+  },
+  {
+    id: 99,
+    question: "Quais países protagonizaram a inédita primeira Copa do Mundo sediada conjuntamente em 2002?",
+    options: ["Japão e Coreia do Sul", "Bélgica e Holanda", "França e Suíça"],
+    correct: "Japão e Coreia do Sul"
+  },
+  {
+    id: 100,
+    question: "Qual seleção masculina conquistou a medalha de ouro nas Olimpíadas do Rio em 2016 pela primeira vez em sua história?",
+    options: ["Alemanha", "Brasil", "Argentina"],
+    correct: "Brasil"
   }
 ];
 
@@ -359,26 +737,49 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
     }
   };
 
-  // Open a pack of 3 random stickers
+  // Open a pack of 3 random stickers with rarity calculation
   const handleOpenPack = () => {
     if (packState !== 'closed') return;
 
     playTearPack();
 
     const selected: { sticker: Sticker; flipped: boolean }[] = [];
-    const unglued = STICKERS.filter(s => s.id <= 36 && !gluedStickerIds.includes(s.id));
-    const allPool = STICKERS.filter(s => s.id <= 36);
+
+    // Separate normal (1-36) and legendary (37-48) stickers
+    const ungluedNormal = STICKERS.filter(s => s.id >= 1 && s.id <= 36 && !gluedStickerIds.includes(s.id));
+    const ungluedLegendary = STICKERS.filter(s => s.id >= 37 && s.id <= 48 && !gluedStickerIds.includes(s.id));
+
+    const allNormal = STICKERS.filter(s => s.id >= 1 && s.id <= 36);
+    const allLegendary = STICKERS.filter(s => s.id >= 37 && s.id <= 48);
+
+    // Sugerimos uma chance de 10% para cada figurinha ser Lendária (id 37 a 48),
+    // reduzindo de cerca de ~25% original (12 em 48) para 10%.
+    const LEGENDARY_DROP_RATE = 0.10;
 
     for (let i = 0; i < 3; i++) {
       let chosen: Sticker;
-      
-      // 60% chance to pick an unglued sticker if there are any left, 40% purely random
-      if (unglued.length > 0 && Math.random() < 0.6) {
-        const index = Math.floor(Math.random() * unglued.length);
-        chosen = unglued[index];
-        unglued.splice(index, 1);
+
+      // Decide se a figurinha será Lendária ou Padrão neste espaço (slot)
+      const isLegendarySlot = Math.random() < LEGENDARY_DROP_RATE;
+
+      if (isLegendarySlot) {
+        // Se sorteou Lendária: de preferência não colada (60% de chance) ou qualquer lendária (40%)
+        if (ungluedLegendary.length > 0 && Math.random() < 0.6) {
+          const index = Math.floor(Math.random() * ungluedLegendary.length);
+          chosen = ungluedLegendary[index];
+          ungluedLegendary.splice(index, 1);
+        } else {
+          chosen = allLegendary[Math.floor(Math.random() * allLegendary.length)];
+        }
       } else {
-        chosen = allPool[Math.floor(Math.random() * allPool.length)];
+        // Se sorteou Normal: de preferência não colada (60% de chance) ou qualquer normal (40%)
+        if (ungluedNormal.length > 0 && Math.random() < 0.6) {
+          const index = Math.floor(Math.random() * ungluedNormal.length);
+          chosen = ungluedNormal[index];
+          ungluedNormal.splice(index, 1);
+        } else {
+          chosen = allNormal[Math.floor(Math.random() * allNormal.length)];
+        }
       }
 
       selected.push({ sticker: chosen, flipped: false });

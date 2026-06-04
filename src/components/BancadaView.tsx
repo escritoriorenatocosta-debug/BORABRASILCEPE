@@ -210,7 +210,7 @@ export default function BancadaView({
               ${isHoveredOnAlbum ? 'scale-102 shadow-[0_0_30px_rgba(255,223,27,0.4)]' : 'hover:scale-101'}
             `}
             style={{
-              backgroundColor: '#ffffff',
+              backgroundColor: '#940870',
               borderWidth: '3px',
               borderColor: '#000000',
               borderStyle: 'solid'
@@ -233,7 +233,7 @@ export default function BancadaView({
                 `}
                 style={{
                   width: '120px',
-                  height: '180px',
+                  height: '140px',
                   borderWidth: '2px',
                   borderColor: '#000000',
                   borderStyle: 'solid'
@@ -244,9 +244,9 @@ export default function BancadaView({
                   alt="Capa do Álbum" 
                   className="absolute inset-0 object-cover z-0"
                   style={{ 
-                    backgroundColor: '#cb00af',
+                    backgroundColor: '#000000',
                     width: '120px',
-                    height: '180px'
+                    height: '140px'
                   }}
                   referrerPolicy="no-referrer"
                 />
@@ -258,7 +258,7 @@ export default function BancadaView({
             <div className="flex flex-col gap-1">
               <p 
                 className="text-white font-black uppercase tracking-wider text-xs"
-                style={{ color: '#2f2f2f' }}
+                style={{ color: '#ffffff' }}
               >
                 {isHoveredOnAlbum ? 'Solte para abrir o álbum!' : 'Arrastar os cromos aqui'}
               </p>

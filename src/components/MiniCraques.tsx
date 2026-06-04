@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as Lucide from 'lucide-react';
 import { Sticker, UserSticker } from '../types';
 import StickerItem from './StickerItem';
-import { playPageFlip, playGlue, playGoalCrowd, playSuccess } from '../audio';
+import { playPageFlip, playGlue, playGoalCrowd, playSuccess, isSoundEnabled } from '../audio';
 import { STICKERS } from '../data';
 import marcaMinicraques from '../assets/images/marca_MInicraques.png';
+import giro from '../assets/images/giro.gif';
+// @ts-ignore
+import audioFusao from '../assets/images/audiofusão.MP3';
 
 interface MiniCraquesProps {
   userStickers: UserSticker[];
@@ -21,6 +24,9 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
   const [popupStage, setPopupStage] = useState<'video' | 'card'>('video');
   const [countdown, setCountdown] = useState(3);
   const [justTransformedId, setJustTransformedId] = useState<number | null>(null);
+
+  // Sound ref for the fusion transformation audio
+  const fusionAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Filter player stickers 1 to 36 that the user has already obtained (status can be glued or inventory)
   const availablePlayers = STICKERS.filter(s => s.id <= 36).filter(s => 
@@ -58,16 +64,53 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
     }
   }, [countdown, showPopup, popupStage]);
 
+  // Clean up sound on unmount
+  useEffect(() => {
+    return () => {
+      if (fusionAudioRef.current) {
+        try {
+          fusionAudioRef.current.pause();
+        } catch (_) {}
+      }
+    };
+  }, []);
+
   const handleStartFusion = () => {
     if (!targetSticker) return;
     playGlue();
     setShowPopup(true);
     setPopupStage('video');
+
+    // Stop any existing fusion sound
+    if (fusionAudioRef.current) {
+      try {
+        fusionAudioRef.current.pause();
+      } catch (_) {}
+      fusionAudioRef.current = null;
+    }
+
+    // Play the synchronization sound
+    if (isSoundEnabled()) {
+      const audio = new Audio(audioFusao);
+      audio.volume = 0.8;
+      audio.play().catch(err => {
+        console.warn("Error playing fusion audio:", err);
+      });
+      fusionAudioRef.current = audio;
+    }
   };
 
   const handleTransformationComplete = () => {
     if (!targetSticker) return;
     
+    // Stop the fusion sound
+    if (fusionAudioRef.current) {
+      try {
+        fusionAudioRef.current.pause();
+      } catch (_) {}
+      fusionAudioRef.current = null;
+    }
+
     const mcSticker = getMinicraqueSticker(targetSticker.id);
     if (mcSticker) {
       setJustTransformedId(mcSticker.id);
@@ -82,6 +125,13 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
   };
 
   const handleClosePopup = () => {
+    // Stop the fusion sound
+    if (fusionAudioRef.current) {
+      try {
+        fusionAudioRef.current.pause();
+      } catch (_) {}
+      fusionAudioRef.current = null;
+    }
     setShowPopup(false);
     setTargetSticker(null);
   };
@@ -311,52 +361,16 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
             {popupStage === 'video' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10 w-full h-full">
                 
-                {/* Visual Video Elements with image fallback */}
-                <video 
-                  src="/src/assets/videos/transform.mp4" 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline
-                  onError={(e) => {
-                    // Fail gracefully by hiding video element
-                    e.currentTarget.style.display = 'none';
-                  }}
-                  className="absolute inset-0 w-full h-full object-cover rounded-full" 
-                />
-
+                {/* Beautiful fusion spiral gif */}
                 <img 
-                  src="/src/assets/images/transform_video.gif" 
+                  src={giro} 
                   alt="Fusão em progresso"
-                  onError={(e) => {
-                    // Fail gracefully
-                    e.currentTarget.style.display = 'none';
-                  }}
-                  className="absolute inset-0 w-full h-full object-cover rounded-full mix-blend-screen opacity-80"
+                  className="absolute inset-0 w-full h-full object-cover rounded-full"
                   referrerPolicy="no-referrer"
                 />
 
-                {/* Highly immersive, futuristic CSS Particle Holographic Swirl generator fallback */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_40%,_#0a031a_95%)] pointer-events-none" />
-                
-                {/* Gimmicky neon fusion rings */}
-                <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full border-4 border-emerald-400 border-t-transparent animate-[spin_1.5s_linear_infinite]" />
-                <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border-4 border-dashed border-pink-500 border-r-transparent animate-[spin_3s_linear_infinite_reverse]" />
-                <div className="absolute w-40 h-40 sm:w-48 sm:h-48 rounded-full border-[8px] border-double border-yellow-300 border-b-transparent animate-spin" />
-                
-                {/* Floating energy particle nodes */}
-                <div className="absolute top-10 left-10 w-4 h-4 bg-purple-500 rounded-full animate-ping" />
-                <div className="absolute bottom-16 right-16 w-3 h-3 bg-cyan-400 rounded-full animate-ping [animation-delay:0.8s]" />
-                <div className="absolute top-1/2 right-8 w-5 h-5 bg-yellow-400 rounded-full animate-pulse" />
-
-                {/* Center Core HUD display */}
-                <div className="z-20 text-center select-none flex flex-col items-center justify-center">
-                  <Lucide.Zap className="w-14 h-14 text-yellow-300 animate-[bounce_1s_infinite] drop-shadow-[0_0_15px_rgba(253,224,71,0.8)]" />
-                  <span className="text-white font-black text-2xl uppercase tracking-widest mt-2">{countdown}s</span>
-                  <span className="text-yellow-400 font-extrabold text-[11px] uppercase tracking-widest bg-slate-950/80 px-4 py-1 rounded-full border border-yellow-400/40 shadow mt-2">
-                    Iniciando Transformação...
-                  </span>
-                </div>
+                {/* Slight overlay for contrast */}
+                <div className="absolute inset-0 rounded-full bg-slate-950/20 pointer-events-none" />
               </div>
             )}
 

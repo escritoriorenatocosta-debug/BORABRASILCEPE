@@ -98,7 +98,8 @@ export default function AlbumInside({
     if (idx === 2) return "CONVOCADOS 3";
     if (idx === 3) return "ESPECIAIS 1";
     if (idx === 4) return "ESPECIAIS 2";
-    return "ESPECIAIS 3";
+    if (idx === 5) return "ESPECIAIS 3";
+    return "THE LEGENDS";
   };
 
   // States for interaction and exports
@@ -249,6 +250,10 @@ export default function AlbumInside({
     return userStickers.some(u => u.status === 'glued' && u.slotId === `MC_${idx}`);
   });
 
+  const isPage7Completed = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47].every(idx => {
+    return userStickers.some(u => u.status === 'glued' && u.slotId === `BRA_${idx}`);
+  });
+
   // Filter slots based on active page
   const activeSlots = SLOTS.filter(slot => {
     if (currentPageIndex === 0) {
@@ -261,8 +266,10 @@ export default function AlbumInside({
       return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) <= 11;
     } else if (currentPageIndex === 4) {
       return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) >= 12 && parseInt(slot.id.split("_")[1]) <= 23;
-    } else {
+    } else if (currentPageIndex === 5) {
       return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) >= 24 && parseInt(slot.id.split("_")[1]) <= 35;
+    } else {
+      return slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) >= 36 && parseInt(slot.id.split("_")[1]) <= 47;
     }
   });
 
@@ -365,7 +372,7 @@ export default function AlbumInside({
         const isMinicraqueSticker = draggingSticker.id >= 101 && draggingSticker.id <= 136;
         const isMinicraqueSlot = slot.id.startsWith("MC_");
 
-        const isTraditionalSticker = draggingSticker.id >= 1 && draggingSticker.id <= 36;
+        const isTraditionalSticker = draggingSticker.id >= 1 && draggingSticker.id <= 48;
         const isTraditionalSlot = slot.id.startsWith("BRA_");
 
         if (isMinicraqueSlot) {
@@ -430,7 +437,7 @@ export default function AlbumInside({
       const isMinicraqueSticker = selectedSticker.id >= 101 && selectedSticker.id <= 136;
       const isMinicraqueSlot = slot.id.startsWith("MC_");
 
-      const isTraditionalSticker = selectedSticker.id >= 1 && selectedSticker.id <= 36;
+      const isTraditionalSticker = selectedSticker.id >= 1 && selectedSticker.id <= 48;
       const isTraditionalSlot = slot.id.startsWith("BRA_");
 
       if (isMinicraqueSlot) {
@@ -654,24 +661,32 @@ export default function AlbumInside({
   // Filter out which sticker object is assigned to this slot (by ID matching)
   const getGluedStickerOnSlot = (slotId: string): Sticker | null => {
     if (slotId === 'SPC_1') {
-      return isPage1Completed ? STICKERS.find(s => s.id === 201) || null : null;
+      const isAwarded = isPage1Completed || localStorage.getItem('cepe_celebrated_page1') === 'true' || userStickers.some(u => u.stickerId === 201 && u.status === 'glued');
+      return isAwarded ? STICKERS.find(s => s.id === 201) || null : null;
     }
     if (slotId === 'SPC_2') {
-      return isPage2Completed ? STICKERS.find(s => s.id === 202) || null : null;
+      const isAwarded = isPage2Completed || localStorage.getItem('cepe_celebrated_page2') === 'true' || userStickers.some(u => u.stickerId === 202 && u.status === 'glued');
+      return isAwarded ? STICKERS.find(s => s.id === 202) || null : null;
     }
     if (slotId === 'SPC_3') {
-      return isPage3Completed ? STICKERS.find(s => s.id === 203) || null : null;
+      const isAwarded = isPage3Completed || localStorage.getItem('cepe_celebrated_page3') === 'true' || userStickers.some(u => u.stickerId === 203 && u.status === 'glued');
+      return isAwarded ? STICKERS.find(s => s.id === 203) || null : null;
     }
     if (slotId === 'SPC_4') {
-      return isVersoCompleted ? STICKERS.find(s => s.id === 204) || null : null;
+      const isAwarded = isVersoCompleted || localStorage.getItem('cepe_celebrated_page4') === 'true' || userStickers.some(u => u.stickerId === 204 && u.status === 'glued');
+      return isAwarded ? STICKERS.find(s => s.id === 204) || null : null;
     }
     if (slotId === 'SPC_5') {
+      const spc5Awarded = localStorage.getItem('cepe_has_celebrated_full_completion_v1') === 'true' || userStickers.some(u => u.stickerId === 205 && u.status === 'glued');
+      if (spc5Awarded) return STICKERS.find(s => s.id === 205) || null;
+
       const coreGluedCount = new Set(
         userStickers
           .filter(u => u.status === 'glued' && u.stickerId < 201)
           .map(u => u.stickerId)
       ).size;
-      return coreGluedCount >= 72 ? STICKERS.find(s => s.id === 205) || null : null;
+      const totalRequired = STICKERS.filter(s => s.id < 201).length;
+      return coreGluedCount >= totalRequired ? STICKERS.find(s => s.id === 205) || null : null;
     }
     const record = userStickers.find(u => u.status === 'glued' && u.slotId === slotId);
     if (!record) return null;
@@ -697,7 +712,7 @@ export default function AlbumInside({
           <span>{exportMessage}</span>
         </div>
       )}      {/* CORE COACH CONTROL CONSOLE BAR & PAGES PANEL - PREMIUM FLAT MODERN DESIGN */}
-      <div className="w-full max-w-5xl mx-auto flex flex-col gap-4 print:hidden z-25 px-6 sm:px-16" id="album-tactical-controls-wrapper">
+      <div className="w-full max-w-5xl mx-auto flex flex-col gap-4 print:hidden z-25 px-2 sm:px-16" id="album-tactical-controls-wrapper">
         {isControlsExpanded && (
           <>
             <div 
@@ -866,6 +881,26 @@ export default function AlbumInside({
                     {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 125 && u.stickerId <= 136).length}/12
                   </span>
                 </button>
+
+                <button
+                  onClick={() => {
+                    if (currentPageIndex !== 6) {
+                      playPageFlip();
+                      onPageIndexChange(6);
+                    }
+                  }}
+                  style={currentPageIndex === 6 ? { backgroundColor: '#cca800' } : undefined}
+                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                    currentPageIndex === 6
+                      ? 'text-white font-black'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                  }`}
+                >
+                  <span className="font-extrabold uppercase text-[11px] tracking-wide">🏆 THE LEGENDS</span>
+                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
+                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 37 && u.stickerId <= 48).length}/12
+                  </span>
+                </button>
               </div>
             </div>
           </>
@@ -915,7 +950,7 @@ export default function AlbumInside({
       </div>
 
       {/* Pages Container Wrapper with Outside Navigation Arrows */}
-      <div className="relative w-full max-w-5xl mx-auto px-6 sm:px-16 print:px-0 flex items-center justify-center">
+      <div className="relative w-full max-w-5xl mx-auto px-2 sm:px-16 print:px-0 flex items-center justify-center">
         {/* Left Arrow Button (StickerBench styling, completely outside / visible) */}
         <button
           onClick={() => {
@@ -948,13 +983,13 @@ export default function AlbumInside({
         
         {/* Dual Page Spread Album Image */}
         <img
-          src={(currentPageIndex >= 3) ? "/src/assets/images/PAGINA3.png" : "/src/assets/images/PAGINA1.png"}
+          src={currentPageIndex === 6 ? "/src/assets/images/PAGINA_legends.png" : (currentPageIndex >= 3) ? "/src/assets/images/PAGINA3.png" : "/src/assets/images/PAGINA1.png"}
           alt="Álbum Bora Brasil Aberto"
           referrerPolicy="no-referrer"
           onError={(e) => {
             const currentSrc = e.currentTarget.src;
             if (currentSrc.includes('/src/assets/images/')) {
-              e.currentTarget.src = (currentPageIndex >= 3) ? '/PAGINA3.png' : '/PAGINA1.png';
+              e.currentTarget.src = currentPageIndex === 6 ? '/PAGINA_legends.png' : (currentPageIndex >= 3) ? '/PAGINA3.png' : '/PAGINA1.png';
             }
           }}
           className="w-full h-full object-cover pointer-events-none select-none"
@@ -983,7 +1018,7 @@ export default function AlbumInside({
             const isMinicraqueSticker = currentTargetSticker.id >= 101 && currentTargetSticker.id <= 136;
             const isMinicraqueSlot = slot.id.startsWith("MC_");
 
-            const isTraditionalSticker = currentTargetSticker.id >= 1 && currentTargetSticker.id <= 36;
+            const isTraditionalSticker = currentTargetSticker.id >= 1 && currentTargetSticker.id <= 48;
             const isTraditionalSlot = slot.id.startsWith("BRA_");
 
             if (isMinicraqueSlot) {
@@ -1129,8 +1164,9 @@ export default function AlbumInside({
                   <span 
                     style={{ 
                       fontFamily: 'system-ui',
-                      fontSize: '12px',
-                      color: '#d3d3d3',
+                      fontSize: '9px',
+                      lineHeight: '16px',
+                      color: '#dcdcdc',
                       fontStyle: 'normal',
                       fontWeight: 'bold',
                       paddingTop: '0px'
@@ -1233,6 +1269,9 @@ export default function AlbumInside({
 
           const idx = (zoomedSticker.id - 1) % 26;
           const isSpecial = zoomedSticker.id >= 201;
+          const isLegend = zoomedSticker.id >= 37 && zoomedSticker.id <= 48;
+          const targetSlot = SLOTS.find(s => s.id === zoomedSticker.slotId);
+          const legendLabel = targetSlot ? targetSlot.label : zoomedSticker.role;
 
           let posName = '';
           if (slot) {
@@ -1296,9 +1335,9 @@ export default function AlbumInside({
 
                 {/* Right side: Information block with outer button below it */}
                 <div className="w-full max-w-xs flex flex-col gap-4">
-                  {/* Green box information block */}
+                  {/* Green or Gold box information block */}
                   <div 
-                    style={{ backgroundColor: '#27b793' }}
+                    style={{ backgroundColor: isLegend ? '#cca800' : '#27b793' }}
                     className="w-full flex flex-col gap-3 font-sans p-4 rounded-[24px] border-4 border-slate-950 shadow-[5px_5px_0_rgba(15,10,25,1)]"
                   >
                     
@@ -1383,6 +1422,30 @@ export default function AlbumInside({
                         <div style={{ color: '#010101' }} className="py-6 border-b border-slate-100 text-center font-bold text-base font-sans uppercase italic">
                           PARABÉNS!!!<br />VOCÊ conseguiu!!!
                         </div>
+                      ) : isLegend ? (
+                        <>
+                          {/* Quote row */}
+                          <div className="py-4 border-b border-slate-200 text-center italic text-slate-800 text-sm font-semibold p-2">
+                            "{FOOTBALL_QUOTES[zoomedSticker.id % FOOTBALL_QUOTES.length]}"
+                          </div>
+
+                          {/* Large centered Player Legend Name */}
+                          <div className="py-4 border-b border-slate-200 text-center">
+                            <span className="text-[20px] text-slate-950 font-black tracking-tight leading-none block">
+                              {legendLabel}
+                            </span>
+                          </div>
+
+                          {/* Club row */}
+                          <div className="flex justify-between items-start py-1">
+                            <span className="text-[10.5px] text-slate-500 font-semibold pt-0.5">
+                              Clube
+                            </span>
+                            <span className="text-[12px] text-slate-900 font-extrabold text-right leading-tight max-w-[150px]">
+                              {clubName}
+                            </span>
+                          </div>
+                        </>
                       ) : (
                         <>
                           {/* Quote row */}
@@ -1416,19 +1479,21 @@ export default function AlbumInside({
                   </div>
 
                   {/* Transform into Minicraque button positioned below the green box */}
-                  <button
-                    onClick={() => {
-                      setZoomedSticker(null);
-                      setIsZoomPersistent(false);
-                      if (onGoToMiniCraques) onGoToMiniCraques();
-                    }}
-                    style={{ width: '250px', height: '40px' }}
-                    className="mx-auto bg-[#FFDF1B] hover:bg-yellow-300 text-slate-950 rounded-full font-black uppercase tracking-wider border-4 border-slate-950 transition-all cursor-pointer shadow-[4px_4px_0_rgba(15,10,25,1)] hover:shadow-[2px_2px_0_rgba(15,10,25,1)] active:translate-y-0.5 text-center flex items-center justify-center gap-1.5"
-                  >
-                    <span style={{ width: '300px', fontSize: '10px' }} className="flex justify-center items-center">
-                      Cromo especial | MiniCraque
-                    </span>
-                  </button>
+                  {!isLegend && (
+                    <button
+                      onClick={() => {
+                        setZoomedSticker(null);
+                        setIsZoomPersistent(false);
+                        if (onGoToMiniCraques) onGoToMiniCraques();
+                      }}
+                      style={{ width: '250px', height: '40px' }}
+                      className="mx-auto bg-[#FFDF1B] hover:bg-yellow-300 text-slate-950 rounded-full font-black uppercase tracking-wider border-4 border-slate-950 transition-all cursor-pointer shadow-[4px_4px_0_rgba(15,10,25,1)] hover:shadow-[2px_2px_0_rgba(15,10,25,1)] active:translate-y-0.5 text-center flex items-center justify-center gap-1.5"
+                    >
+                      <span style={{ width: '300px', fontSize: '10px' }} className="flex justify-center items-center">
+                        Cromo especial | MiniCraque
+                      </span>
+                    </button>
+                  )}
                 </div>
 
               </div>
@@ -1440,7 +1505,7 @@ export default function AlbumInside({
         {/* Right Arrow Button (StickerBench styling, completely outside / visible) */}
         <button
           onClick={() => {
-            if (currentPageIndex < 5) {
+            if (currentPageIndex < 6) {
               playPageFlip();
               onPageIndexChange(currentPageIndex + 1);
             } else {
@@ -1455,17 +1520,17 @@ export default function AlbumInside({
             height: '36px',
             padding: '0px',
           }}
-          aria-label={currentPageIndex < 5 ? "Ir para Próxima Página" : "Ir para a Escalação"}
+          aria-label={currentPageIndex < 6 ? "Ir para Próxima Página" : "Ir para a Escalação"}
         >
           <ChevronRight className="w-5 h-5 stroke-[3.5] text-white" />
         </button>
       </div>
 
       {/* Pages control indicators */}
-      <div className="flex justify-center items-center max-w-5xl mx-auto w-full px-6 sm:px-16 print:hidden font-sans py-2">
+      <div className="flex justify-center items-center max-w-5xl mx-auto w-full px-2 sm:px-16 print:hidden font-sans py-2">
         <div
           style={{ 
-            backgroundColor: (currentPageIndex >= 3) ? '#db2777' : '#7833a9',
+            backgroundColor: (currentPageIndex === 6) ? '#cca800' : (currentPageIndex >= 3) ? '#db2777' : '#7833a9',
             borderWidth: '2px',
             borderColor: '#000000',
             borderStyle: 'solid',

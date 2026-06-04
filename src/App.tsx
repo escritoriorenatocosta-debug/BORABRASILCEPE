@@ -22,6 +22,8 @@ import { STICKERS } from './data';
 import { playPageFlip, setSoundEnabled, playGoalCrowd, isMusicEnabled, setMusicEnabled, startBackgroundMusic, stopBackgroundMusic } from './audio';
 import { Sparkles, Trophy, HelpCircle, Gamepad2, Info, Play, Video, X, Award } from 'lucide-react';
 import AtivoImage from './assets/images/GOOOL.png';
+import marcaMinicraques from './assets/images/marca_MInicraques.png';
+import ResetImage from './assets/images/regenerated_image_1779716630166.png';
 
 const LOCAL_STORAGE_KEY = 'cepe_album_progress_2026_v1';
 
@@ -30,7 +32,7 @@ const getInitialRouteInfo = () => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     
-    let matched: 'entrada' | 'capa' | 'album' | 'album2' | 'album3' | 'album4' | 'album5' | 'album6' | 'verso' | 'ajuste' | 'conquistas' | 'minicraques' | 'bancada' | null = null;
+    let matched: 'entrada' | 'capa' | 'album' | 'album2' | 'album3' | 'album4' | 'album5' | 'album6' | 'album7' | 'verso' | 'ajuste' | 'conquistas' | 'minicraques' | 'bancada' | null = null;
     if (path === '/entrada' || hash === '#/entrada') matched = 'entrada';
     else if (path === '/capa' || hash === '#/capa') matched = 'capa';
     else if (path === '/album' || hash === '#/album') matched = 'album';
@@ -39,6 +41,7 @@ const getInitialRouteInfo = () => {
     else if (path === '/album4' || hash === '#/album4') matched = 'album4';
     else if (path === '/album5' || hash === '#/album5') matched = 'album5';
     else if (path === '/album6' || hash === '#/album6') matched = 'album6';
+    else if (path === '/album7' || hash === '#/album7') matched = 'album7';
     else if (path === '/verso' || hash === '#/verso') matched = 'verso';
     else if (path === '/ajuste' || hash === '#/ajuste' || hash === '#ajuste') matched = 'ajuste';
     else if (path === '/conquistas' || hash === '#/conquistas') matched = 'conquistas';
@@ -68,6 +71,9 @@ const getInitialRouteInfo = () => {
     }
     if (matched === 'album6') {
       return { entered: true, currentPage: 'album' as const, albumPageIndex: 5 };
+    }
+    if (matched === 'album7') {
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: 6 };
     }
     if (matched === 'verso') {
       return { entered: true, currentPage: 'back' as const, albumPageIndex: 0 };
@@ -153,6 +159,7 @@ export default function App() {
   });
 
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [celebrationPageName, setCelebrationPageName] = useState<'titulares' | 'reservas' | 'auxiliares' | 'minicraques' | 'verso' | null>(null);
   const [specialStickerAwarded, setSpecialStickerAwarded] = useState<Sticker | null>(null);
   const [showFullCompletionModal, setShowFullCompletionModal] = useState(false);
@@ -173,9 +180,19 @@ export default function App() {
     };
   }, []);
 
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Manage header visibility based on current page
   useEffect(() => {
-    if (currentPage === 'album') {
+    if (currentPage === 'album' || currentPage === 'minicraques' || currentPage === 'bancada' || currentPage === 'back') {
       setIsHeaderVisible(false);
     } else {
       setIsHeaderVisible(true);
@@ -328,6 +345,7 @@ export default function App() {
       else if (currentPage === 'album' && albumPageIndex === 3) targetPath = '/album4';
       else if (currentPage === 'album' && albumPageIndex === 4) targetPath = '/album5';
       else if (currentPage === 'album' && albumPageIndex === 5) targetPath = '/album6';
+      else if (currentPage === 'album' && albumPageIndex === 6) targetPath = '/album7';
       else if (currentPage === 'back') targetPath = '/verso';
       else if (currentPage === 'achievements') targetPath = '/conquistas';
       else if (currentPage === 'minicraques') targetPath = '/minicraques';
@@ -442,24 +460,80 @@ export default function App() {
     setIsVersoCompleted(isComplete);
   };
 
+  const handleFloatingMiniCraquesClick = () => {
+    playPageFlip();
+    setCurrentPage('minicraques');
+    setIsHeaderVisible(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFloatingTimeClick = () => {
+    playPageFlip();
+    setCurrentPage('back');
+    setIsHeaderVisible(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFloatingBancadaClick = () => {
+    playPageFlip();
+    setCurrentPage('bancada');
+    setIsHeaderVisible(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFloatingAlbumClick = () => {
+    playPageFlip();
+    setCurrentPage('album');
+    setIsHeaderVisible(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFloatingAbrirClick = () => {
+    playPageFlip();
+    setIsHeaderVisible(false);
+    if (currentPage === 'back' || currentPage === 'achievements' || currentPage === 'minicraques' || currentPage === 'bancada') {
+      setCurrentPage('album');
+      setAlbumPageIndex(1);
+    }
+    setTimeout(() => {
+      const el = document.getElementById('pack-manager-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  };
+
   // Clear state and start fresh
-  const handleResetProgress = () => {
+  const executeResetProgress = () => {
     setUserStickers([]);
     setCelebratedPage1(false);
     setCelebratedPage2(false);
     setCelebratedPage3(false);
     setCelebratedPage4(false);
+    setIsVersoCompleted(false);
+    setShowCelebrationModal(false);
+    setShowFullCompletionModal(false);
+    setCelebrationPageName(null);
+    setSpecialStickerAwarded(null);
     try {
       localStorage.removeItem('cepe_dream_team_lineup_v2');
       localStorage.removeItem('cepe_dream_team_formation_v2');
+      localStorage.removeItem('cepe_dream_team_coach_id_v2');
       localStorage.setItem('cepe_celebrated_page1', 'false');
       localStorage.setItem('cepe_celebrated_page2', 'false');
       localStorage.setItem('cepe_celebrated_page3', 'false');
       localStorage.setItem('cepe_celebrated_page4', 'false');
       localStorage.removeItem('cepe_has_celebrated_full_completion_v1');
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
     } catch (_) {}
     setCurrentPage('cover');
+    setEntered(false);
+    setShowResetConfirm(false);
     playPageFlip();
+  };
+
+  const handleResetProgress = () => {
+    setShowResetConfirm(true);
   };
 
   // Page completion checker effects inside App.tsx
@@ -571,6 +645,37 @@ export default function App() {
     celebratedPage4, 
     initialized
   ]);
+
+  // High-reliability dynamic reconstitution synchronization for SPC stickers:
+  // Ensures that once a category or page has been unlocked (indicated by state & localStorage flags),
+  // those special cards will always persist as glued in the player's collection!
+  useEffect(() => {
+    if (!initialized) return;
+
+    let changed = false;
+    setUserStickers(prev => {
+      let next = [...prev];
+      const spcChecks = [
+        { completed: celebratedPage1, id: 201, slot: 'SPC_1' },
+        { completed: celebratedPage2, id: 202, slot: 'SPC_2' },
+        { completed: celebratedPage3, id: 203, slot: 'SPC_3' },
+        { completed: celebratedPage4, id: 204, slot: 'SPC_4' },
+      ];
+
+      spcChecks.forEach(check => {
+        if (check.completed) {
+          const hasItGlued = next.some(u => u.stickerId === check.id && u.status === 'glued');
+          if (!hasItGlued) {
+            next = next.filter(u => u.stickerId !== check.id);
+            next.push({ stickerId: check.id, status: 'glued', slotId: check.slot });
+            changed = true;
+          }
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [celebratedPage1, celebratedPage2, celebratedPage3, celebratedPage4, initialized]);
 
   // Shortcut to toggle Goal Celebration Modal ("/" key)
   useEffect(() => {
@@ -851,7 +956,8 @@ export default function App() {
               playPageFlip();
               if (sticker) {
                 let targetPageIndex = 0;
-                if (sticker.id >= 125) targetPageIndex = 5;
+                if (sticker.id >= 37 && sticker.id <= 48) targetPageIndex = 6;
+                else if (sticker.id >= 125) targetPageIndex = 5;
                 else if (sticker.id >= 113) targetPageIndex = 4;
                 else if (sticker.id >= 101) targetPageIndex = 3;
                 else if (sticker.id >= 25) targetPageIndex = 2;
@@ -1014,6 +1120,57 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ⚠️ CONFIRMAÇÃO DE RESET DO PROGRESSO DO JOGO ⚠️ */}
+      {showResetConfirm && (
+        <div key="reset-confirmation-popup" className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 overflow-y-auto select-none animate-fade-in font-sans">
+          <div 
+            className="w-full border-6 border-slate-950 rounded-[32px] p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center relative flex flex-col items-center justify-center gap-6 animate-scale-in"
+            style={{ width: '560px', maxWidth: '100%', backgroundColor: '#2f0037' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Warning Icon Badge */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-slate-950 flex items-center justify-center shadow-lg transform -rotate-6 overflow-hidden animate-bounce" style={{ backgroundColor: '#a619b4' }}>
+              <img src={ResetImage} alt="Recomeçar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="font-sans uppercase tracking-tight text-white drop-shadow-md" style={{ fontWeight: 'bold', fontSize: '22px' }}>
+                RECOMEÇAR ÁLBUM DO ZERO?
+              </h2>
+              <p className="text-slate-300 font-medium leading-relaxed" style={{ fontSize: '12px', width: '400px', maxWidth: '100%' }}>
+                Você tem certeza de que deseja apagar todo o seu progresso no jogo, suas figurinhas coladas e conquistas?
+              </p>
+              <p className="uppercase tracking-wider" style={{ color: '#b605f9', fontSize: '11px', fontWeight: 'bold' }}>
+                Esta ação é irreversível e você retornará para a tela inicial!
+              </p>
+            </div>
+
+            {/* Action buttons with absolute style precision */}
+            <div className="flex flex-col sm:flex-row gap-4 w-full mt-2">
+              <button
+                onClick={executeResetProgress}
+                style={{ backgroundColor: '#710b98', color: '#ff00b8' }}
+                className="flex-1 py-3 px-6 font-black rounded-full border-3 border-slate-950 shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-wider uppercase transition-all duration-150 active:translate-y-0.5 active:shadow-none cursor-pointer text-center hover:brightness-110 flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                Sim, zerar jogo
+              </button>
+              
+              <button
+                onClick={() => {
+                  playPageFlip();
+                  setShowResetConfirm(false);
+                }}
+                style={{ backgroundColor: '#d58307' }}
+                className="flex-1 py-3 px-6 text-white font-black rounded-full border-3 border-slate-950 shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-wider uppercase transition-all duration-150 active:translate-y-0.5 active:shadow-none cursor-pointer text-center hover:brightness-110 flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                Não, continuar jogando
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 📣 CELEBRATÓRIO POP-UP FLUTUANTE DE GOOOL!!!! ⚽️ */}
       {showCelebrationModal && specialStickerAwarded && (
         <div key="goal-celebration-popup" className="fixed inset-0 bg-[#280436]/90 z-[200] flex items-center justify-center p-4 overflow-y-auto select-none animate-fade-in">
@@ -1081,13 +1238,13 @@ export default function App() {
                {/* Header bar capsule */}
                <div className="w-full bg-white border-4 border-slate-950 rounded-[20px] px-4 py-1.5 shadow-[3px_3px_0_rgba(15,10,25,1)] flex items-center justify-between">
                  <span className="text-[#e21b3c] font-black text-xl tracking-tight uppercase">
-                   <img src={AtivoImage || "/src/assets/images/Ativo 8.png"} 
+                   <img src={"/src/assets/images/regenerated_image_1780114641990.png"} 
                       onError={(e) => {
                         const target = e.currentTarget as HTMLImageElement;
-                        if (target.src.includes('Ativo') && !target.src.includes('goool_image.png')) {
+                        if (!target.src.includes('goool_image.png')) {
                           target.src = "/src/assets/images/goool_image.png";
                         } else if (target.src.includes('goool_image.png')) {
-                          target.src = "/src/assets/images/Ativo%208.png";
+                          target.src = "/src/assets/images/goool_image.png";
                         }
                       }}
                       alt="GOOOOL!!!" className="h-[50px] w-auto object-contain select-none inline-block inline-flex translate-y-0.5" referrerPolicy="no-referrer" />
@@ -1221,7 +1378,7 @@ export default function App() {
           >
             <div className="space-y-2">
               <img 
-                src="/src/assets/images/regenerated_image_1780114641990.png" 
+                src="/src/assets/images/Cbranco.png" 
                 alt="GOOOL!!!" 
                 className="object-contain mx-auto drop-shadow-md"
                 style={{ height: '90px', paddingBottom: '0px', paddingTop: '0px', marginLeft: '0px', marginTop: '0px', marginBottom: '-56px', width: '900px' }}
@@ -1251,6 +1408,80 @@ export default function App() {
               className="px-8 py-3 w-full text-white font-sans font-black rounded-full border-3 border-slate-950 shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-wider uppercase transition-all duration-150 active:translate-y-0.5 active:shadow-none cursor-pointer text-center hover:brightness-110 flex items-center justify-center gap-2"
             >
               Ver Minhas Conquistas!
+            </button>
+          </div>
+        </div>
+      )}
+      {/* FLOATING NAVIGATION PANEL ON SCROLL */}
+      {entered && scrollY > 120 && (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 select-none">
+          {/* Album Button Above the dock */}
+          <button
+            onClick={handleFloatingAlbumClick}
+            style={{ backgroundColor: '#712eab', marginBottom: '0px', marginRight: '45px' }}
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 cursor-pointer transition-all active:scale-90 flex items-center justify-center hover:brightness-110 shadow-lg ${currentPage === 'album' ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900' : ''}`}
+            title="Voltar para o Álbum"
+          >
+            <span className="font-sans font-black text-[10px] sm:text-xs tracking-wider text-white select-none">ÁLBUM</span>
+          </button>
+
+          {/* Dock content */}
+          <div 
+            className="flex items-center gap-2 sm:gap-3 bg-black/25 backdrop-blur-md p-1.5 sm:p-2 rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 animate-fade-in"
+          >
+            {/* Mini Craques Button */}
+            <button
+              onClick={handleFloatingMiniCraquesClick}
+              style={{ backgroundColor: '#e21b8e' }}
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 cursor-pointer transition-all active:scale-90 flex items-center justify-center hover:brightness-110 shadow-lg ${currentPage === 'minicraques' ? 'ring-2 ring-pink-500 ring-offset-2 ring-offset-slate-900' : ''}`}
+              title="Mini Craques"
+            >
+              <img 
+                src={marcaMinicraques} 
+                alt="Mini Craques" 
+                className="object-contain select-none h-6 sm:h-7 w-auto active:scale-95 transition-transform"
+                referrerPolicy="no-referrer"
+              />
+            </button>
+   
+            {/* ABRIR PACKET Button */}
+            <button
+              onClick={handleFloatingAbrirClick}
+              style={{ backgroundColor: '#ff8400' }}
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 cursor-pointer transition-all active:scale-90 flex items-center justify-center hover:brightness-110 shadow-lg"
+              title="Obter Figurinhas / Abrir Pacote"
+            >
+              <img 
+                src="/src/assets/images/ABRIR2.png" 
+                alt="Abrir Pacote" 
+                className="object-contain select-none h-7 sm:h-8 w-auto active:scale-95 transition-transform"
+                referrerPolicy="no-referrer"
+              />
+            </button>
+   
+            {/* BANCADA Button */}
+            <button
+              onClick={handleFloatingBancadaClick}
+              style={{ backgroundColor: '#af1d92' }}
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 cursor-pointer transition-all active:scale-90 flex items-center justify-center hover:brightness-110 shadow-lg ${currentPage === 'bancada' ? 'ring-2 ring-fuchsia-500 ring-offset-2 ring-offset-slate-900' : ''}`}
+              title="Minha Bancada"
+            >
+              <img 
+                src="/src/assets/images/Ativo 4.png" 
+                alt="Minha Bancada" 
+                className="object-contain select-none h-6 sm:h-7 w-auto active:scale-95 transition-transform"
+                referrerPolicy="no-referrer"
+              />
+            </button>
+  
+            {/* TIME Button */}
+            <button
+              onClick={handleFloatingTimeClick}
+              style={{ backgroundColor: '#72a33d' }}
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 cursor-pointer transition-all active:scale-90 flex items-center justify-center hover:brightness-110 shadow-lg ${currentPage === 'back' ? 'ring-2 ring-green-400 ring-offset-2 ring-offset-slate-900' : ''}`}
+              title="Time dos Sonhos"
+            >
+              <span className="font-sans font-black text-[10px] sm:text-xs tracking-wider text-white select-none">TIME</span>
             </button>
           </div>
         </div>

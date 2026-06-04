@@ -49,7 +49,7 @@ export function startBackgroundMusic() {
     const playPromise = bgAudio.play();
     if (playPromise !== undefined) {
       playPromise.catch(err => {
-        console.warn("Background music play was deferred or blocked by browser gesture protocols:", err);
+        console.log("Background music is queued and will play once the user interacts with the document.");
         const resumeOnGesture = () => {
           if (isMusicPlaying && bgAudio) {
             bgAudio.play().catch(_ => {});
