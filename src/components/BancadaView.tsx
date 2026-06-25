@@ -4,26 +4,43 @@ import StickerItem from './StickerItem';
 import { Sticker, UserSticker } from '../types';
 import capaBora from '../assets/images/CAPA BORA.png';
 import { playPageFlip, playPeel, playGlue } from '../audio';
-import { ArrowLeft, Star, X, CheckSquare, Sparkles, BookOpen, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Star, X, CheckSquare, Sparkles, BookOpen, AlertCircle, Copy, Download } from 'lucide-react';
 
 interface BancadaViewProps {
   benchStickers: { sticker: Sticker; count: number }[];
+  vaultedStickers: { sticker: Sticker; count: number }[];
   userStickers: UserSticker[];
   onGlueSticker: (stickerId: number, slotId: string) => void;
   onGoToAlbum: (sticker?: Sticker) => void;
+  onStoreRepeated: () => void;
+  onRetrieveFromVault: (stickerId: number) => void;
 }
 
 export default function BancadaView({ 
   benchStickers, 
+  vaultedStickers,
   userStickers, 
   onGlueSticker, 
-  onGoToAlbum 
+  onGoToAlbum,
+  onStoreRepeated,
+  onRetrieveFromVault
 }: BancadaViewProps) {
   const [draggingSticker, setDraggingSticker] = useState<Sticker | null>(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [isHoveredOnAlbum, setIsHoveredOnAlbum] = useState(false);
   const [zoomedSticker, setZoomedSticker] = useState<Sticker | null>(null);
+  const [isGuardarModalOpen, setIsGuardarModalOpen] = useState(false);
+
+  // Calcule as repetidas (duplicadas) soltas na bancada de forma correta
+  const repeatedStickersOnBench = benchStickers.map(({ sticker, count }) => {
+    const isGlued = userStickers.some(u => u.stickerId === sticker.id && u.status === 'glued');
+    const repeatedCount = isGlued ? count : count - 1;
+    return { sticker, count: repeatedCount };
+  }).filter(item => item.count > 0);
+
+  const totalRepeatedOnBenchCount = repeatedStickersOnBench.reduce((sum, item) => sum + item.count, 0);
+  const totalVaultedCount = vaultedStickers.reduce((sum, item) => sum + item.count, 0);
 
   // Calculate coordinates when dragging is active
   useEffect(() => {
@@ -154,7 +171,7 @@ export default function BancadaView({
           
           {/* Header section in the purple container */}
           <div className="flex items-center justify-between border-b border-purple-500/30 pb-3 flex-wrap gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 flex-wrap">
               <span 
                 className="font-black uppercase tracking-widest flex items-center justify-center text-center select-none"
                 style={{
@@ -174,6 +191,39 @@ export default function BancadaView({
               >
                 BANCADA
               </span>
+
+               <button
+                onClick={() => {
+                  if (totalRepeatedOnBenchCount > 0) {
+                    playGlue();
+                    onStoreRepeated();
+                  } else {
+                    playPageFlip();
+                  }
+                  setIsGuardarModalOpen(true);
+                }}
+                className="font-black uppercase tracking-widest flex items-center justify-center text-center select-none cursor-pointer hover:scale-105 active:scale-95 active:translate-y-0.5 transition-all outline-none font-sans"
+                style={{
+                  height: '40px',
+                  paddingLeft: '16px',
+                  paddingRight: '16px',
+                  borderWidth: '0px',
+                  borderRadius: '20px',
+                  color: '#ffffff',
+                  backgroundColor: totalRepeatedOnBenchCount > 0 ? '#22c55e' : '#7c3aed',
+                  fontSize: '11px',
+                  lineHeight: '11px',
+                  boxShadow: totalRepeatedOnBenchCount > 0 
+                    ? '0 4px 12px rgba(34,197,94,0.3)' 
+                    : '0 4px 12px rgba(124,58,237,0.3)'
+                }}
+              >
+                <span>
+                  {totalRepeatedOnBenchCount > 0 
+                    ? `GUARDAR REPETIDAS (${totalRepeatedOnBenchCount})` 
+                    : `VER CAIXINHA (${totalVaultedCount})`}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -378,6 +428,118 @@ export default function BancadaView({
           >
             <div className="animate-pulse shadow-2xl scale-125 rotate-[-3deg] border-4 border-[#FFDF1B] rounded-2xl bg-slate-900 overflow-hidden">
               <StickerItem sticker={draggingSticker} size="md" />
+            </div>
+          </div>
+        )}
+
+        {/* MODAL GUARDAR REPETIDAS */}
+        {isGuardarModalOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity animate-fade-in animate-duration-200">
+            <div 
+              className="rounded-[36px] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.85)] relative flex flex-col justify-between overflow-hidden max-w-md w-full border-4 border-slate-950"
+              style={{
+                height: '540px',
+                backgroundColor: '#7b2e98',
+              }}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center border-b border-purple-500/30 pb-3">
+                <div className="flex items-center gap-2">
+                  <span 
+                    className="font-black uppercase tracking-widest text-[#FFDF1B] flex items-center gap-1.5"
+                    style={{ fontSize: '14px' }}
+                  >
+                    📦 CAIXINHA DE FIGURINHAS
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    playPageFlip();
+                    setIsGuardarModalOpen(false);
+                  }}
+                  className="w-8 h-8 bg-white/10 text-white hover:bg-white hover:text-slate-950 hover:scale-105 active:scale-95 transition-all rounded-full flex items-center justify-center cursor-pointer border border-white/20"
+                >
+                  <X className="w-4 h-4 stroke-[3]" />
+                </button>
+              </div>
+
+              {/* Stats & Description */}
+              <div className="my-3 bg-slate-950/40 p-3 rounded-2xl border border-purple-500/20 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="font-sans">
+                  <p className="text-xs text-purple-200">Total guardado</p>
+                  <p className="text-xl font-black text-white">{totalVaultedCount} CROMOS</p>
+                </div>
+                <div className="font-sans">
+                  <p className="text-xs text-purple-200">Tipos de modelo</p>
+                  <p className="text-base font-extrabold text-[#FFDF1B]">{vaultedStickers.length} TIPOS</p>
+                </div>
+              </div>
+
+              {/* Scrollable list of vaulted stickers */}
+              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slug-500 pr-1 my-2 bg-slate-950/20 rounded-2xl p-3 border border-purple-500/10 min-h-0">
+                {vaultedStickers.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                    <AlertCircle className="w-10 h-10 text-purple-200/55 mb-2 stroke-[1.5]" />
+                    <p className="text-xs text-purple-200 font-bold uppercase tracking-wide">Caixinha Vazia!</p>
+                    <p className="text-[10px] text-zinc-300 max-w-[220px] mt-1">
+                      Você ainda não guardou nenhuma figurinha duplicada. Clique em "GUARDAR REPETIDAS" na bancada para guardá-las aqui!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {vaultedStickers.map(({ sticker, count }) => (
+                      <div 
+                        key={sticker.id}
+                        className="flex items-center justify-between p-2 rounded-xl bg-slate-950/40 border border-purple-500/10 hover:border-purple-500/35 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-12 rounded bg-slate-900 border border-slate-950 overflow-hidden flex-shrink-0">
+                            <StickerItem sticker={sticker} size="sm" className="w-full h-full object-cover scale-[1.05]" />
+                          </div>
+                          <div className="flex flex-col leading-tight min-w-0">
+                            <span className="text-[11px] font-black text-white truncate max-w-[120px]">
+                              #{sticker.id} - {sticker.name}
+                            </span>
+                            <span className="text-[9px] text-purple-200/70 font-medium truncate uppercase">
+                              {sticker.role}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Actions on sticker */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {/* Count Badge */}
+                          <div className="bg-[#FFDF1B] text-slate-950 border-2 border-slate-950 font-black px-2 py-0.5 rounded-full text-[10px] shadow-sm flex items-center justify-center">
+                            x{count}
+                          </div>
+                          <button
+                            onClick={() => {
+                              playPeel();
+                              onRetrieveFromVault(sticker.id);
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-500 hover:scale-105 active:scale-95 transition-all text-white font-black text-[9px] px-2 py-1 rounded-lg border-2 border-slate-950 uppercase flex items-center justify-center cursor-pointer select-none font-sans"
+                            style={{ fontSize: '8px' }}
+                          >
+                            RETIRAR
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-2.5 pt-3 border-t border-purple-500/20">
+                <button
+                  onClick={() => {
+                    playPageFlip();
+                    setIsGuardarModalOpen(false);
+                  }}
+                  className="w-full font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-102 active:translate-y-0.5 active:scale-98 select-none py-3 rounded-2xl border-2 text-xs text-white bg-slate-950 hover:bg-slate-900 border-slate-950 shadow-md font-sans"
+                >
+                  FECHAR CAIXINHA
+                </button>
+              </div>
             </div>
           </div>
         )}

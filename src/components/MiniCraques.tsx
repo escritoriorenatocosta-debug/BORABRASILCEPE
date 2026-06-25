@@ -28,14 +28,19 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
   // Sound ref for the fusion transformation audio
   const fusionAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Filter player stickers 1 to 36 that the user has already obtained (status can be glued or inventory)
-  const availablePlayers = STICKERS.filter(s => s.id <= 36).filter(s => 
+  // Filter player stickers that are traditional convocados and highlight those the user contains
+  const availablePlayers = STICKERS.filter(s => (s.id >= 1 && s.id <= 36) || (s.id >= 49 && s.id <= 96) || (s.id >= 401 && s.id <= 496) || (s.id >= 601 && s.id <= 636) || (s.id >= 737 && s.id <= 739)).filter(s => 
     userStickers.some(u => u.stickerId === s.id)
   );
 
+  const totalTransformable = STICKERS.filter(s => (s.id >= 1 && s.id <= 36) || (s.id >= 49 && s.id <= 96) || (s.id >= 401 && s.id <= 496) || (s.id >= 601 && s.id <= 636) || (s.id >= 737 && s.id <= 739)).length;
+
   // Map standard player sticker to corresponding minicraque
   const getMinicraqueSticker = (standardStickerId: number): Sticker | undefined => {
-    const mcId = standardStickerId + 100;
+    let mcId = standardStickerId + 100;
+    if (standardStickerId >= 737 && standardStickerId <= 739) {
+      mcId = standardStickerId + 3;
+    }
     return STICKERS.find(s => s.id === mcId);
   };
 
@@ -286,7 +291,7 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
                 style={{ fontFamily: 'system-ui', fontWeight: 'bold', color: '#ffffff' }}
                 className="text-purple-300 text-[11px] bg-purple-950/60 px-3 py-1 rounded-full border border-purple-900/30 font-mono font-bold"
               >
-                {availablePlayers.length}/36 Coletados
+                {availablePlayers.length}/{totalTransformable} Coletados
               </span>
             </div>
 
@@ -294,7 +299,7 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
               <div className="flex-1 flex flex-col items-center justify-center py-12 text-center text-slate-500">
                 <Lucide.FileQuestion className="w-12 h-12 text-purple-900 mb-2" />
                 <p className="text-purple-400 font-bold text-xs">Nenhuma fígurinha comum coletada ainda!</p>
-                <p className="text-purple-500/80 text-[11px] max-w-xs mt-1">Abra pacotes na página inicial para obter jogadores comuns (1 a 36) e depois transformá-los aqui.</p>
+                <p className="text-purple-500/80 text-[11px] max-w-xs mt-1">Abra pacotes na página inicial para obter jogadores comuns e depois transformá-los aqui.</p>
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3.5 max-h-[380px] overflow-y-auto pr-1">
@@ -333,8 +338,17 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
                         </div>
                       )}
                       
-                      <div className="w-full aspect-[0.72] overflow-hidden rounded-lg">
-                        <StickerItem sticker={u} isGlued={true} size="sm" className="w-full h-full" />
+                      <div className="w-full aspect-[0.72] overflow-hidden rounded-lg relative">
+                        <StickerItem 
+                          sticker={u} 
+                          isGlued={true} 
+                          size="sm" 
+                          className="w-full h-full transition-all duration-300" 
+                          style={isTransformed ? { filter: 'brightness(0.8) grayscale(0.15)' } : undefined}
+                        />
+                        {isTransformed && (
+                          <div className="absolute inset-0 bg-fuchsia-950/20 pointer-events-none transition-all duration-300" />
+                        )}
                       </div>
                       
                       <span className="text-[9px] font-extrabold pb-0.5 uppercase tracking-tight text-purple-200 mt-1 truncate w-full px-0.5 group-hover:text-yellow-300">
@@ -402,7 +416,7 @@ export default function MiniCraques({ userStickers, onBack, onAddMinicraque, onG
                   <StickerItem sticker={currentMinicraque} isGlued={true} size="lg" className="border-4 border-[#898989] scale-[1.05] w-[220px]" />
                   <div className="absolute -top-4 -right-4 bg-[#d95ae7] rounded-full p-2 border-2 border-slate-950 shadow-xl animate-pulse z-20 pointer-events-none select-none flex items-center justify-center">
                     <img 
-                      src="/src/assets/images/Ativo 7.png" 
+                      src="/assets/images/Ativo 7.png" 
                       alt="Sparkles" 
                       className="w-10 h-10 object-contain"
                       referrerPolicy="no-referrer"

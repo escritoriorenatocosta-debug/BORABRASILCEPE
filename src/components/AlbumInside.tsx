@@ -31,7 +31,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Star
+  Star,
+  Check
 } from 'lucide-react';
 
 const colorCache = new Map<string, string>();
@@ -93,13 +94,10 @@ export default function AlbumInside({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getPageTitleLabel = (idx: number) => {
-    if (idx === 0) return "CONVOCADOS 1";
-    if (idx === 1) return "CONVOCADOS 2";
-    if (idx === 2) return "CONVOCADOS 3";
-    if (idx === 3) return "ESPECIAIS 1";
-    if (idx === 4) return "ESPECIAIS 2";
-    if (idx === 5) return "ESPECIAIS 3";
-    return "THE LEGENDS";
+    if (idx >= 0 && idx <= 17) return `CONVOCADOS ${idx + 1}`;
+    if (idx >= 18 && idx <= 35) return `ESPECIAIS ${idx - 17}`;
+    if (idx === 38) return `EXTRA`;
+    return `THE LEGENDS ${idx - 35}`;
   };
 
   // States for interaction and exports
@@ -122,6 +120,10 @@ export default function AlbumInside({
   const [duplicateToastPos, setDuplicateToastPos] = useState<Slot | null>(null);
   const duplicateTimerRef = useRef<any>(null);
 
+  // States for Auto Glue feedback overlay
+  const [autoGlueCount, setAutoGlueCount] = useState<number | null>(null);
+  const autoGlueTimerRef = useRef<any>(null);
+
   const triggerDuplicateFeedback = (slot: Slot) => {
     playRefuse();
     if (duplicateTimerRef.current) {
@@ -141,6 +143,9 @@ export default function AlbumInside({
       if (duplicateTimerRef.current) {
         clearTimeout(duplicateTimerRef.current);
       }
+      if (autoGlueTimerRef.current) {
+        clearTimeout(autoGlueTimerRef.current);
+      }
     };
   }, []);
 
@@ -157,6 +162,7 @@ export default function AlbumInside({
 
   // States for Click-and-Hold/Long-Press magnifying view
   const [zoomedSticker, setZoomedSticker] = useState<Sticker | null>(null);
+  const [isEquipeZoomed, setIsEquipeZoomed] = useState(false);
   const [isZoomPersistent, setIsZoomPersistent] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
   const [downloadNotification, setDownloadNotification] = useState(false);
@@ -256,21 +262,67 @@ export default function AlbumInside({
 
   // Filter slots based on active page
   const activeSlots = SLOTS.filter(slot => {
-    if (currentPageIndex === 0) {
-      return (slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) <= 11) || slot.id === "SPC_1";
-    } else if (currentPageIndex === 1) {
-      return (slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) >= 12 && parseInt(slot.id.split("_")[1]) <= 23) || slot.id === "SPC_2";
-    } else if (currentPageIndex === 2) {
-      return (slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) >= 24 && parseInt(slot.id.split("_")[1]) <= 35) || slot.id === "SPC_3";
-    } else if (currentPageIndex === 3) {
-      return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) <= 11;
-    } else if (currentPageIndex === 4) {
-      return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) >= 12 && parseInt(slot.id.split("_")[1]) <= 23;
-    } else if (currentPageIndex === 5) {
-      return slot.id.startsWith("MC_") && parseInt(slot.id.split("_")[1]) >= 24 && parseInt(slot.id.split("_")[1]) <= 35;
-    } else {
-      return slot.id.startsWith("BRA_") && parseInt(slot.id.split("_")[1]) >= 36 && parseInt(slot.id.split("_")[1]) <= 47;
+    // CONVOCADOS (0 to 17)
+    if (currentPageIndex >= 0 && currentPageIndex <= 17) {
+      let minId = currentPageIndex * 12;
+      let maxId = currentPageIndex * 12 + 11;
+      
+      // Handle the legacy page offset overrides because BRA_36-47 is Legends 1 and BRA_96-107 is Legends 2
+      if (currentPageIndex === 3) { minId = 48; maxId = 59; }
+      else if (currentPageIndex === 4) { minId = 60; maxId = 71; }
+      else if (currentPageIndex === 5) { minId = 72; maxId = 83; }
+      else if (currentPageIndex === 6) { minId = 84; maxId = 95; }
+      else if (currentPageIndex >= 7) {
+        minId = 108 + (currentPageIndex - 7) * 12;
+        maxId = minId + 11;
+      }
+      
+      const isCorrectBra = slot.id.startsWith("BRA_") && (() => {
+        const num = parseInt(slot.id.split("_")[1]);
+        return num >= minId && num <= maxId;
+      })();
+      
+      const isCorrectSpc = (currentPageIndex === 0 && slot.id === "SPC_1") ||
+                           (currentPageIndex === 1 && slot.id === "SPC_2") ||
+                           (currentPageIndex === 2 && slot.id === "SPC_3");
+                           
+      return isCorrectBra || isCorrectSpc;
     }
+    
+    // ESPECIAIS / MINICRAQUES (18 to 35)
+    if (currentPageIndex >= 18 && currentPageIndex <= 35) {
+      const pageNum = currentPageIndex - 18; // 0 to 17
+      const minId = pageNum * 12;
+      const maxId = pageNum * 12 + 11;
+      
+      return slot.id.startsWith("MC_") && (() => {
+        const num = parseInt(slot.id.split("_")[1]);
+        return num >= minId && num <= maxId;
+      })();
+    }
+    
+    // THE LEGENDS (36 to 37)
+    if (currentPageIndex >= 36 && currentPageIndex <= 37) {
+      const pageNum = currentPageIndex - 36; // 0 to 1
+      if (pageNum === 0) {
+        return slot.id.startsWith("BRA_") && (() => {
+          const num = parseInt(slot.id.split("_")[1]);
+          return num >= 36 && num <= 47;
+        })();
+      } else {
+        return slot.id.startsWith("BRA_") && (() => {
+          const num = parseInt(slot.id.split("_")[1]);
+          return num >= 96 && num <= 107;
+        })();
+      }
+    }
+
+    // EXTRA (38)
+    if (currentPageIndex === 38) {
+      return slot.id.startsWith("EXT_");
+    }
+    
+    return false;
   });
 
   const [isExporting, setIsExporting] = useState(false);
@@ -369,29 +421,8 @@ export default function AlbumInside({
       // Satisfies generic drop of any sticker to any tactical slot
       if (distance < 8.0) {
         // Validation check for correct slot matching
-        const isMinicraqueSticker = draggingSticker.id >= 101 && draggingSticker.id <= 136;
-        const isMinicraqueSlot = slot.id.startsWith("MC_");
-
-        const isTraditionalSticker = draggingSticker.id >= 1 && draggingSticker.id <= 48;
-        const isTraditionalSlot = slot.id.startsWith("BRA_");
-
-        if (isMinicraqueSlot) {
-          if (!isMinicraqueSticker) return;
-          const expectedSlotId = `MC_${draggingSticker.id - 101}`;
-          if (slot.id !== expectedSlotId) {
-            return;
-          }
-        } else if (isTraditionalSlot) {
-          if (!isTraditionalSticker) return;
-          const expectedSlotId = `BRA_${draggingSticker.id - 1}`;
-          if (slot.id !== expectedSlotId) {
-            return;
-          }
-        } else {
-          // Special/Other slot checks (exact one-to-one match by predefined slotId)
-          if (draggingSticker.slotId !== slot.id) {
-            return;
-          }
+        if (draggingSticker.slotId !== slot.id) {
+          return;
         }
 
         // Strict check to prevent gluing repeated/duplicate stickers anywhere in the entire album
@@ -434,28 +465,8 @@ export default function AlbumInside({
     const selectedSticker = benchStickers.find(b => b.sticker.id === selectedStickerId)?.sticker;
     if (selectedSticker) {
       // Validation check for correct slot matching
-      const isMinicraqueSticker = selectedSticker.id >= 101 && selectedSticker.id <= 136;
-      const isMinicraqueSlot = slot.id.startsWith("MC_");
-
-      const isTraditionalSticker = selectedSticker.id >= 1 && selectedSticker.id <= 48;
-      const isTraditionalSlot = slot.id.startsWith("BRA_");
-
-      if (isMinicraqueSlot) {
-        if (!isMinicraqueSticker) return;
-        const expectedSlotId = `MC_${selectedSticker.id - 101}`;
-        if (slot.id !== expectedSlotId) {
-          return;
-        }
-      } else if (isTraditionalSlot) {
-        if (!isTraditionalSticker) return;
-        const expectedSlotId = `BRA_${selectedSticker.id - 1}`;
-        if (slot.id !== expectedSlotId) {
-          return;
-        }
-      } else {
-        if (selectedSticker.slotId !== slot.id) {
-          return;
-        }
+      if (selectedSticker.slotId !== slot.id) {
+        return;
       }
 
       // Strict check to prevent gluing repeated/duplicate stickers anywhere in the entire album
@@ -475,7 +486,7 @@ export default function AlbumInside({
     }
   };
 
-  // Auto Lineup helper ("Auto-escalar" team helper)
+  // Auto Glue helper ("Auto-colar" helper across the entire album)
   const handleAutoLineup = () => {
     // Collect all unique available inventory stickers
     const available = benchStickers.map(b => ({ ...b }));
@@ -483,10 +494,11 @@ export default function AlbumInside({
 
     playGlue();
 
+    let gluedCount = 0;
     const gluedOnRun = new Set<number>();
 
-    // Iterate through all empty slots on current page (ignoring special slots)
-    activeSlots.filter(s => s.id.startsWith("BRA_") || s.id.startsWith("MC_")).forEach(slot => {
+    // Iterate through all empty slots in the entire album (SLOTS)
+    SLOTS.filter(s => s.id.startsWith("BRA_") || s.id.startsWith("MC_") || s.id.startsWith("SPC_")).forEach(slot => {
       const isOccupied = userStickers.some(u => u.status === 'glued' && u.slotId === slot.id);
       if (!isOccupied && available.length > 0) {
         // Find the sticker that belongs exactly to this slot
@@ -501,6 +513,7 @@ export default function AlbumInside({
           const targetBundle = available[targetBundleIdx];
           onGlueSticker(targetBundle.sticker.id, slot.id);
           gluedOnRun.add(targetBundle.sticker.id);
+          gluedCount++;
 
           // Deduct count
           targetBundle.count -= 1;
@@ -510,6 +523,14 @@ export default function AlbumInside({
         }
       }
     });
+
+    if (autoGlueTimerRef.current) {
+      clearTimeout(autoGlueTimerRef.current);
+    }
+    setAutoGlueCount(gluedCount);
+    autoGlueTimerRef.current = setTimeout(() => {
+      setAutoGlueCount(null);
+    }, 4000);
   };
 
   // Clear all players from the field entirely
@@ -680,12 +701,20 @@ export default function AlbumInside({
       const spc5Awarded = localStorage.getItem('cepe_has_celebrated_full_completion_v1') === 'true' || userStickers.some(u => u.stickerId === 205 && u.status === 'glued');
       if (spc5Awarded) return STICKERS.find(s => s.id === 205) || null;
 
+      const isProgressSlot = (slotId?: string): boolean => {
+        if (!slotId) return false;
+        if (slotId.startsWith("BRA_")) {
+          return true;
+        }
+        return ["EXT_0", "EXT_1", "EXT_2"].includes(slotId);
+      };
+
       const coreGluedCount = new Set(
         userStickers
-          .filter(u => u.status === 'glued' && u.stickerId < 201)
+          .filter(u => u.status === 'glued' && isProgressSlot(u.slotId))
           .map(u => u.stickerId)
       ).size;
-      const totalRequired = STICKERS.filter(s => s.id < 201).length;
+      const totalRequired = 243;
       return coreGluedCount >= totalRequired ? STICKERS.find(s => s.id === 205) || null : null;
     }
     const record = userStickers.find(u => u.status === 'glued' && u.slotId === slotId);
@@ -715,15 +744,296 @@ export default function AlbumInside({
       <div className="w-full max-w-5xl mx-auto flex flex-col gap-4 print:hidden z-25 px-2 sm:px-16" id="album-tactical-controls-wrapper">
         {isControlsExpanded && (
           <>
+            {/* PAGE TOGGLER - DESIGN FOR 32 COMPREHENSIVE PAGES (Categorized and Fluid) */}
             <div 
-              style={{ backgroundColor: '#7b2e98' }}
-              className="w-full border-4 border-slate-950 rounded-[28px] p-4.5 shadow-xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 z-20 text-center md:text-left"
+              data-html2canvas-ignore="true" 
+              style={{ backgroundColor: '#ffffff' }}
+              className="w-full border-4 border-slate-950 rounded-[32px] p-5 flex flex-col items-center justify-center gap-4 shadow-lg"
             >
-              <div className="flex flex-col items-center md:items-start font-sans">
+              {/* Derived category status */}
+              {(() => {
+                const currentCategory = currentPageIndex === 38 ? 'extra' : currentPageIndex >= 36 ? 'legends' : currentPageIndex >= 18 ? 'especiais' : 'convocados';
+
+                const getConvocadosPageCount = (p: number) => {
+                  let minId = p * 12;
+                  let maxId = p * 12 + 11;
+                  // Handle the legacy gaps because BRA_36-47 is Legends 1 and BRA_96-107 is Legends 2
+                  if (p === 3) { minId = 48; maxId = 59; }
+                  else if (p === 4) { minId = 60; maxId = 71; }
+                  else if (p === 5) { minId = 72; maxId = 83; }
+                  else if (p === 6) { minId = 84; maxId = 95; }
+                  else if (p >= 7) {
+                    minId = 108 + (p - 7) * 12;
+                    maxId = minId + 11;
+                  }
+                  return userStickers.filter(u => u.status === 'glued' && u.slotId.startsWith("BRA_") && (() => {
+                    const idx = parseInt(u.slotId.split("_")[1]);
+                    return idx >= minId && idx <= maxId;
+                  })()).length;
+                };
+
+                const getEspeciaisPageCount = (p: number) => {
+                  const minId = p * 12;
+                  const maxId = p * 12 + 11;
+                  return userStickers.filter(u => u.status === 'glued' && u.slotId.startsWith("MC_") && (() => {
+                    const idx = parseInt(u.slotId.split("_")[1]);
+                    return idx >= minId && idx <= maxId;
+                  })()).length;
+                };
+
+                const getLegendsPageCount = (p: number) => {
+                  const pageOffset = p === 0 ? [36, 47] : [96, 107];
+                  return userStickers.filter(u => u.status === 'glued' && u.slotId.startsWith("BRA_") && (() => {
+                    const idx = parseInt(u.slotId.split("_")[1]);
+                    return idx >= pageOffset[0] && idx <= pageOffset[1];
+                  })()).length;
+                };
+
+                const getExtraPageCount = () => {
+                  return userStickers.filter(u => u.status === 'glued' && u.slotId.startsWith("EXT_")).length;
+                };
+
+                return (
+                  <div className="w-full flex flex-col gap-4">
+                    {/* Row 1: Main Category Selection */}
+                    <div className="flex flex-col md:flex-row items-center gap-4 w-full justify-center pb-3 border-b-2 border-slate-100">
+                      <div className="flex items-center gap-2.5 flex-wrap justify-center">
+                        <button
+                          onClick={() => {
+                            if (currentCategory !== 'convocados') {
+                              playPageFlip();
+                              onPageIndexChange(0);
+                            }
+                          }}
+                          style={currentCategory === 'convocados' ? { backgroundColor: '#7b2e98' } : undefined}
+                          className={`px-4 py-2 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                            currentCategory === 'convocados'
+                              ? 'text-white font-black'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                          }`}
+                        >
+                          <span className="font-extrabold uppercase text-[11px] tracking-wider">CONVOCADOS (PÁG 1-18)</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            if (currentCategory !== 'especiais') {
+                              playPageFlip();
+                              onPageIndexChange(18);
+                            }
+                          }}
+                          style={currentCategory === 'especiais' ? { backgroundColor: '#db2777' } : undefined}
+                          className={`px-4 py-2 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                            currentCategory === 'especiais'
+                              ? 'text-white font-black'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                          }`}
+                        >
+                          <span className="font-extrabold uppercase text-[11px] tracking-wider">ESPECIAIS (PÁG 1-18)</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            if (currentCategory !== 'legends') {
+                              playPageFlip();
+                              onPageIndexChange(36);
+                            }
+                          }}
+                          style={currentCategory === 'legends' ? { backgroundColor: '#cca800' } : undefined}
+                          className={`px-4 py-2 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                            currentCategory === 'legends'
+                              ? 'text-white font-black border-slate-950'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                          }`}
+                        >
+                          <span className="font-extrabold uppercase text-[11px] tracking-wider">🏆 THE LEGENDS</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (currentCategory !== 'extra') {
+                              playPageFlip();
+                              onPageIndexChange(38);
+                            }
+                          }}
+                          style={currentCategory === 'extra' ? { backgroundColor: '#10b981' } : undefined}
+                          className={`px-4 py-2 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
+                            currentCategory === 'extra'
+                              ? 'text-white font-black border-slate-950'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
+                          }`}
+                        >
+                          <span className="font-extrabold uppercase text-[11px] tracking-wider">📦 EXTRA</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Sub-pages Section inside Active Category */}
+                    <div className="flex flex-col md:flex-row items-center gap-3 w-full justify-center">
+                      <div className="flex items-center gap-2 flex-wrap justify-center">
+                        {currentCategory === 'convocados' && Array.from({ length: 18 }).map((_, i) => {
+                          const isSelected = currentPageIndex === i;
+                          const count = getConvocadosPageCount(i);
+                          const isCompleted = count === 12;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                  if (currentPageIndex !== i) {
+                                    playPageFlip();
+                                    onPageIndexChange(i);
+                                  }
+                              }}
+                              style={isSelected ? { backgroundColor: '#7b2e98' } : undefined}
+                              className={`px-3 py-1.5 rounded-full font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 border-slate-950 shadow-[2px_2px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none relative ${
+                                isSelected
+                                  ? 'text-white font-black'
+                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 border-slate-200'
+                              }`}
+                            >
+                              <span>Pág {i + 1}</span>
+                              <span className={`font-mono text-[9px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-black/30 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                                {count}/12
+                              </span>
+                              {isCompleted && (
+                                <div 
+                                  className="absolute -top-2 -right-2 text-white rounded-full px-1.5 py-0.5 border border-slate-950 z-20 shadow text-[8px] font-black tracking-tight shrink-0 flex items-center justify-center gap-0.5"
+                                  style={{ backgroundColor: '#ff00ff' }}
+                                  title="Página Completada! ✓ OK"
+                                >
+                                  <Check className="w-2 h-2 stroke-[5]" />
+                                  <span>OK</span>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+
+                        {currentCategory === 'especiais' && Array.from({ length: 18 }).map((_, i) => {
+                          const targetIdx = 18 + i;
+                          const isSelected = currentPageIndex === targetIdx;
+                          const count = getEspeciaisPageCount(i);
+                          const isCompleted = count === 12;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                if (currentPageIndex !== targetIdx) {
+                                  playPageFlip();
+                                  onPageIndexChange(targetIdx);
+                                }
+                              }}
+                              style={isSelected ? { backgroundColor: '#db2777' } : undefined}
+                              className={`px-3 py-1.5 rounded-full font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 border-slate-950 shadow-[2px_2px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none relative ${
+                                isSelected
+                                  ? 'text-white font-black'
+                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 border-slate-200'
+                              }`}
+                            >
+                              <span>Pág {i + 1}</span>
+                              <span className={`font-mono text-[9px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-black/30 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                                {count}/12
+                              </span>
+                              {isCompleted && (
+                                <div 
+                                  className="absolute -top-2 -right-2 text-white rounded-full px-1.5 py-0.5 border border-slate-950 z-20 shadow text-[8px] font-black tracking-tight shrink-0 flex items-center justify-center gap-0.5"
+                                  style={{ backgroundColor: '#ff00ff' }}
+                                  title="Página Completada! ✓ OK"
+                                >
+                                  <Check className="w-2 h-2 stroke-[5]" />
+                                  <span>OK</span>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+
+                        {currentCategory === 'legends' && Array.from({ length: 2 }).map((_, i) => {
+                          const targetIdx = 36 + i;
+                          const isSelected = currentPageIndex === targetIdx;
+                          const count = getLegendsPageCount(i);
+                          const isCompleted = count === 12;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                if (currentPageIndex !== targetIdx) {
+                                  playPageFlip();
+                                  onPageIndexChange(targetIdx);
+                                }
+                              }}
+                              style={isSelected ? { backgroundColor: '#cca800' } : undefined}
+                              className={`px-3 py-1.5 rounded-full font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 border-slate-950 shadow-[2px_2px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none relative ${
+                                isSelected
+                                  ? 'text-white font-black'
+                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 border-slate-200'
+                              }`}
+                            >
+                              <span>Pág {i + 1}</span>
+                              <span className={`font-mono text-[9px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-black/30 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                                {count}/12
+                              </span>
+                              {isCompleted && (
+                                <div 
+                                  className="absolute -top-2 -right-2 text-white rounded-full px-1.5 py-0.5 border border-slate-950 z-20 shadow text-[8px] font-black tracking-tight shrink-0 flex items-center justify-center gap-0.5"
+                                  style={{ backgroundColor: '#ff00ff' }}
+                                  title="Página Completada! ✓ OK"
+                                >
+                                  <Check className="w-2 h-2 stroke-[5]" />
+                                  <span>OK</span>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+
+                        {currentCategory === 'extra' && (() => {
+                          const count = getExtraPageCount();
+                          const isCompleted = count === 6;
+                          return (
+                            <button
+                              onClick={() => {
+                                if (currentPageIndex !== 38) {
+                                  playPageFlip();
+                                  onPageIndexChange(38);
+                                }
+                              }}
+                              style={{ backgroundColor: '#10b981' }}
+                              className="px-3 py-1.5 rounded-full font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer border-2 border-slate-950 shadow-[2px_2px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none text-white font-black relative"
+                            >
+                              <span>ÚNICA</span>
+                              <span className="font-mono text-[9px] px-1.5 py-0.2 rounded-full bg-black/30 text-white">
+                                {count}/6
+                              </span>
+                              {isCompleted && (
+                                <div 
+                                  className="absolute -top-2 -right-2 text-white rounded-full px-1.5 py-0.5 border border-slate-950 z-20 shadow text-[8px] font-black tracking-tight shrink-0 flex items-center justify-center gap-0.5"
+                                  style={{ backgroundColor: '#ff00ff' }}
+                                  title="Página Completada! ✓ OK"
+                                >
+                                  <Check className="w-2 h-2 stroke-[5]" />
+                                  <span>OK</span>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div 
+              style={{ backgroundColor: '#7b2e98', height: '60px' }}
+              className="w-full border-4 border-slate-950 rounded-full px-4 sm:px-6 shadow-xl flex flex-row items-center justify-between gap-2 z-20"
+            >
+              <div className="flex flex-row items-center font-sans">
                 <div className="flex items-center gap-2">
                   <span 
-                    style={{ color: '#000000' }}
-                    className="bg-[#FFDF1B] text-[10px] font-black uppercase px-3 py-1 rounded-full select-none shadow border-2 border-slate-950 tracking-wider"
+                    style={{ backgroundColor: '#000000', color: '#ffffff' }}
+                    className="text-[10px] font-black uppercase px-3 py-1 rounded-full select-none shadow border-2 border-slate-950 tracking-wider"
                   >
                     AUTO-TÁTICO
                   </span>
@@ -735,172 +1045,14 @@ export default function AlbumInside({
                 {benchStickers.length > 0 && (
                   <button 
                     onClick={handleAutoLineup}
-                    title="Escalar automaticamente os disponíveis nas posições livres"
+                    title="Colar todas as figurinhas que você possuir no inventário nas posições livres do álbum"
                     className="px-4 py-2 bg-[#FFDF1B] hover:bg-[#ffe535] text-slate-950 border-2 border-slate-950 font-black text-xs rounded-full shadow-[2px_2px_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5 flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
                   >
-                    <span>AUTO-ESCALAR</span>
+                    <span>AUTO-COLAR</span>
                   </button>
                 )}
 
-                {userStickers.some(u => u.status === 'glued' && u.slotId) && (
-                  <button 
-                    onClick={handleClearField}
-                    title="Desescalar todo o time e retornar todos para a bancada"
-                    className="px-4 py-2 bg-[#e21b3c] hover:bg-red-700 text-white border-2 border-slate-950 font-black text-xs rounded-full shadow-[2px_2px_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5 flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
-                  >
-                    <RefreshCcw className="w-3.5 h-3.5 text-white" />
-                    <span>LIMPAR CAMPO</span>
-                  </button>
-                )}
-              </div>
-            </div>
 
-            {/* PAGE TOGGLER FOR PAGE 1, 2, 3 & 4 (48 STICKERS TOTAL) - PREMIUM FLAT DESIGN PANEL */}
-            <div 
-              data-html2canvas-ignore="true" 
-              style={{ backgroundColor: '#ffffff' }}
-              className="w-full border-4 border-slate-950 rounded-[32px] p-4 flex flex-col xl:flex-row items-center justify-center gap-4 shadow-lg"
-            >
-              <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full xl:w-auto font-sans flex-wrap justify-center">
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 0) {
-                      playPageFlip();
-                      onPageIndexChange(0);
-                    }
-                  }}
-                  style={currentPageIndex === 0 ? { backgroundColor: '#7b2e98' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 0
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">CONVOCADOS 1</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId <= 12).length}/12
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 1) {
-                      playPageFlip();
-                      onPageIndexChange(1);
-                    }
-                  }}
-                  style={currentPageIndex === 1 ? { backgroundColor: '#7b2e98' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 1
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">CONVOCADOS 2</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 13 && u.stickerId <= 24).length}/12
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 2) {
-                      playPageFlip();
-                      onPageIndexChange(2);
-                    }
-                  }}
-                  style={currentPageIndex === 2 ? { backgroundColor: '#7b2e98' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 2
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">CONVOCADOS 3</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 25 && u.stickerId <= 36).length}/12
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 3) {
-                      playPageFlip();
-                      onPageIndexChange(3);
-                    }
-                  }}
-                  style={currentPageIndex === 3 ? { backgroundColor: '#db2777' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 3
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 1 (⚡)</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 101 && u.stickerId <= 112).length}/12
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 4) {
-                      playPageFlip();
-                      onPageIndexChange(4);
-                    }
-                  }}
-                  style={currentPageIndex === 4 ? { backgroundColor: '#db2777' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 4
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 2 (⚡)</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 113 && u.stickerId <= 124).length}/12
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 5) {
-                      playPageFlip();
-                      onPageIndexChange(5);
-                    }
-                  }}
-                  style={currentPageIndex === 5 ? { backgroundColor: '#db2777' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 5
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">ESPECIAIS 3 (⚡)</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 125 && u.stickerId <= 136).length}/12
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentPageIndex !== 6) {
-                      playPageFlip();
-                      onPageIndexChange(6);
-                    }
-                  }}
-                  style={currentPageIndex === 6 ? { backgroundColor: '#cca800' } : undefined}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-slate-950 shadow-[3px_3px_0_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none ${
-                    currentPageIndex === 6
-                      ? 'text-white font-black'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-800'
-                  }`}
-                >
-                  <span className="font-extrabold uppercase text-[11px] tracking-wide">🏆 THE LEGENDS</span>
-                  <span className="font-mono text-[11px] bg-black/40 px-2.5 py-0.5 rounded-full">
-                    {userStickers.filter(u => u.status === 'glued' && u.stickerId >= 37 && u.stickerId <= 48).length}/12
-                  </span>
-                </button>
               </div>
             </div>
           </>
@@ -983,13 +1135,13 @@ export default function AlbumInside({
         
         {/* Dual Page Spread Album Image */}
         <img
-          src={currentPageIndex === 6 ? "/src/assets/images/PAGINA_legends.png" : (currentPageIndex >= 3) ? "/src/assets/images/PAGINA3.png" : "/src/assets/images/PAGINA1.png"}
+          src={currentPageIndex === 38 ? "/assets/images/PAGINA__EXTRA.png" : currentPageIndex >= 36 ? "/assets/images/PAGINA_legends.png" : (currentPageIndex >= 18) ? "/assets/images/PAGINA3.png" : "/assets/images/PAGINA1.png"}
           alt="Álbum Bora Brasil Aberto"
           referrerPolicy="no-referrer"
           onError={(e) => {
             const currentSrc = e.currentTarget.src;
-            if (currentSrc.includes('/src/assets/images/')) {
-              e.currentTarget.src = currentPageIndex === 6 ? '/PAGINA_legends.png' : (currentPageIndex >= 3) ? '/PAGINA3.png' : '/PAGINA1.png';
+            if (currentSrc.includes('/assets/images/')) {
+              e.currentTarget.src = currentPageIndex === 38 ? '/PAGINA__EXTRA.png' : currentPageIndex >= 36 ? '/PAGINA_legends.png' : (currentPageIndex >= 18) ? '/PAGINA3.png' : '/PAGINA1.png';
             }
           }}
           className="w-full h-full object-cover pointer-events-none select-none"
@@ -997,6 +1149,39 @@ export default function AlbumInside({
 
         {/* Floating spine crease shade */}
         <div className="absolute inset-y-0 left-[49.7%] w-1 sm:w-2 bg-gradient-to-r from-black/30 via-black/50 to-black/30 pointer-events-none z-10 print:hidden" />
+
+        {/* Lupa zoom button for page 39 (extra) team photo */}
+        {currentPageIndex === 38 && (
+          <button
+            onClick={() => setIsEquipeZoomed(true)}
+            title="Clique para ampliar a foto da equipe completa!"
+            className="absolute z-30 group cursor-pointer flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{
+              left: '88%',
+              bottom: '5.5%',
+              width: '8%',
+              height: '10%',
+              borderRadius: '8px',
+              border: 'none',
+              background: 'transparent',
+              padding: 0
+            }}
+          >
+            {/* Glowing yellow outline */}
+            <div 
+              className="absolute inset-0 border-2 border-dashed rounded-lg opacity-30 group-hover:opacity-100 transition-all duration-300 animate-pulse" 
+              style={{ borderColor: '#ffffff' }}
+            />
+            
+            {/* Floating Zoom icon with background */}
+            <div 
+              className="relative bg-slate-950/80 hover:bg-slate-950 rounded-full shadow-lg transition-all duration-300 transform group-hover:rotate-12 border-2 flex items-center justify-center"
+              style={{ width: '40px', height: '40px', borderColor: '#ffffff', color: '#ffffff' }}
+            >
+              <ZoomIn className="w-5 h-5" style={{ color: '#ffffff' }} />
+            </div>
+          </button>
+        )}
 
         {/* Render Page Field Slots */}
         {activeSlots.map((slot, index) => {
@@ -1010,29 +1195,9 @@ export default function AlbumInside({
           const isGlued = !!gluedSticker;
           const isSpecial = slot.id.startsWith('SPC_');
 
-          // Highlight rule: if we clicked or are dragging a sticker, only glow the correct specific slot for minicraques
+          // Highlight rule: if we clicked or are dragging a sticker, only glow the correct specific slot
           const currentTargetSticker = draggingSticker || activeSelectedSticker;
-          const shouldSlotGlow = (() => {
-            if (!currentTargetSticker) return false;
-            
-            const isMinicraqueSticker = currentTargetSticker.id >= 101 && currentTargetSticker.id <= 136;
-            const isMinicraqueSlot = slot.id.startsWith("MC_");
-
-            const isTraditionalSticker = currentTargetSticker.id >= 1 && currentTargetSticker.id <= 48;
-            const isTraditionalSlot = slot.id.startsWith("BRA_");
-
-            if (isMinicraqueSlot) {
-              if (!isMinicraqueSticker) return false;
-              const expectedSlotId = `MC_${currentTargetSticker.id - 101}`;
-              return slot.id === expectedSlotId;
-            } else if (isTraditionalSlot) {
-              if (!isTraditionalSticker) return false;
-              const expectedSlotId = `BRA_${currentTargetSticker.id - 1}`;
-              return slot.id === expectedSlotId;
-            } else {
-              return currentTargetSticker.slotId === slot.id;
-            }
-          })();
+          const shouldSlotGlow = currentTargetSticker ? currentTargetSticker.slotId === slot.id : false;
 
           return (
             <div
@@ -1062,13 +1227,6 @@ export default function AlbumInside({
                   onClick={(e) => {
                     e.stopPropagation();
                     setClickedSlotId(clickedSlotId === slot.id ? null : slot.id);
-                  }}
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    if (!isSpecial) {
-                      playPeel();
-                      onUnglueSticker(gluedSticker.id, slot.id);
-                    }
                   }}
                   onPointerDown={(e) => startZoomHold(e, gluedSticker)}
                   onPointerUp={endZoomHold}
@@ -1106,21 +1264,6 @@ export default function AlbumInside({
                     >
                       <ZoomIn className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                     </button>
-
-                    {/* Return back to Bench shortcut (Only for normal standard stickers, special ones are permanently unlocked!) */}
-                    {!isSpecial && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playPeel();
-                          onUnglueSticker(gluedSticker.id, slot.id);
-                        }}
-                        title="Excluir"
-                        className="bg-red-600 hover:bg-red-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full shadow-md transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer border border-red-400/30"
-                      >
-                        <X className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
-                      </button>
-                    )}
                   </div>
 
                   {/* Little field position watermark label on the glued sticker representing current tactical duty */}
@@ -1153,11 +1296,11 @@ export default function AlbumInside({
                     borderRadius: index === 11 ? '6px' : '2px'
                   }}
                   className={`
-                    w-full h-full flex flex-col justify-center items-center border-2 border-dashed
+                    w-full h-full flex flex-col justify-center items-center
                     transition-all duration-300 relative bg-black/25 text-center p-1
                     ${shouldSlotGlow
-                      ? 'border-yellow-400 bg-yellow-400/10 scale-102 animate-pulse shadow-[0_0_12px_rgba(251,191,36,0.35)]' 
-                      : 'border-emerald-700/60 hover:bg-emerald-800/10 hover:border-emerald-600'}
+                      ? 'border-[#FFDF1B] border-4 border-dashed bg-yellow-400/10 scale-102 animate-pulse shadow-[0_0_25px_rgba(255,223,27,0.6)]' 
+                      : 'border-2 border-dashed border-emerald-700/60 hover:bg-emerald-800/10 hover:border-emerald-600'}
                     ${isCurrentlyHovered ? 'bg-yellow-400/25 scale-105 border-double border-4' : ''}
                   `}
                 >
@@ -1166,24 +1309,29 @@ export default function AlbumInside({
                       fontFamily: 'system-ui',
                       fontSize: '9px',
                       lineHeight: '16px',
-                      color: '#dcdcdc',
+                      color: shouldSlotGlow ? '#ffffff' : '#dcdcdc',
                       fontStyle: 'normal',
                       fontWeight: 'bold',
-                      paddingTop: '0px'
+                      paddingTop: '0px',
+                      opacity: shouldSlotGlow ? 0.3 : 1
                     }}
-                    className="font-bold tracking-tighter uppercase select-none"
+                    className="font-bold tracking-tighter uppercase select-none font-sans"
                   >
                     {slot.label}
                   </span>
                   
                   {/* Guided glowing beacon when dragging/selecting */}
                   {(shouldSlotGlow) && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-yellow-400/5 pointer-events-none">
-                      <div className="w-10 h-10 rounded-full bg-slate-950 border-2 border-slate-700 flex items-center justify-center text-white shadow-lg animate-pulse">
-                        <span className="text-xl font-black leading-none -mt-0.5 select-none text-white">+</span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-yellow-400/5 pointer-events-none z-20">
+                      {/* High-definition premium dark circular plus button equivalent to client attachment mockup */}
+                      <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-slate-950 border-2 border-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.85)] flex items-center justify-center overflow-hidden">
+                        {/* Subtly glossy overlay background */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-black z-0" />
+                        <div className="absolute inset-x-0 top-0 h-[45%] bg-white/5 rounded-t-full z-10" />
+                        <span className="relative text-2xl sm:text-3xl font-bold leading-none -mt-0.5 select-none text-white z-20">+</span>
                       </div>
-                      <span className="text-[6.5px] font-sans font-bold text-yellow-100 uppercase tracking-widest mt-1 opacity-70">
-                        ESCALAR AQUI
+                      <span className="text-[8px] sm:text-[9.5px] font-sans font-black text-white bg-black/75 px-1.5 py-0.5 rounded tracking-widest mt-1.5 shadow-sm border border-white/10 uppercase select-none animate-bounce">
+                        COLAR AQUI
                       </span>
                     </div>
                   )}
@@ -1268,8 +1416,8 @@ export default function AlbumInside({
           ];
 
           const idx = (zoomedSticker.id - 1) % 26;
-          const isSpecial = zoomedSticker.id >= 201;
-          const isLegend = zoomedSticker.id >= 37 && zoomedSticker.id <= 48;
+          const isSpecial = zoomedSticker.id >= 201 && zoomedSticker.id <= 204;
+          const isLegend = (zoomedSticker.id >= 37 && zoomedSticker.id <= 48) || (zoomedSticker.id >= 301 && zoomedSticker.id <= 312);
           const targetSlot = SLOTS.find(s => s.id === zoomedSticker.slotId);
           const legendLabel = targetSlot ? targetSlot.label : zoomedSticker.role;
 
@@ -1352,7 +1500,7 @@ export default function AlbumInside({
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
-                              const resolvedPath = zoomedSticker.imagePath.startsWith('/src/assets/images/') 
+                              const resolvedPath = zoomedSticker.imagePath.startsWith('/assets/images/') 
                                 ? zoomedSticker.imagePath 
                                 : `/src/assets/images${zoomedSticker.imagePath}`;
                               
@@ -1456,10 +1604,10 @@ export default function AlbumInside({
                           {/* Position row */}
                           <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                             <span className="text-[10.5px] text-slate-500 font-semibold">
-                              {zoomedSticker.id >= 101 && zoomedSticker.id <= 124 ? "Número" : "Posição"}
+                              {zoomedSticker.slotId.startsWith("MC_") ? "Número" : "Posição"}
                             </span>
                             <span className="text-[12px] text-slate-900 font-extrabold">
-                              {zoomedSticker.id >= 101 && zoomedSticker.id <= 124 ? `Nº ${zoomedSticker.id - 100}` : posName}
+                              {zoomedSticker.slotId.startsWith("MC_") ? (targetSlot ? targetSlot.label : "Minicraque") : posName}
                             </span>
                           </div>
 
@@ -1500,12 +1648,103 @@ export default function AlbumInside({
             </div>
           );
         })(), document.body)}
+
+        {isEquipeZoomed && createPortal(
+          <div 
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300"
+            onClick={() => setIsEquipeZoomed(false)}
+          >
+            <div 
+              className="relative bg-[#7833a9] border-4 border-slate-950 rounded-[32px] shadow-2xl max-w-4xl w-full p-6 overflow-hidden flex flex-col justify-center animate-out duration-300 zoom-in-95"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setIsEquipeZoomed(false)}
+                className="absolute top-4 right-4 bg-slate-950 hover:bg-slate-900 border-2 border-slate-950 hover:border-[#FFDF1B] text-[#FFDF1B] w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110 shadow-lg text-white"
+                title="Fechar"
+              >
+                <X className="w-5 h-5 text-[#FFDF1B]" />
+              </button>
+
+              <div className="text-center mb-4 flex flex-col items-center">
+                <span 
+                  className="text-2xl font-black uppercase tracking-wider select-none animate-bounce-short"
+                  style={{ color: '#7bfe68' }}
+                >
+                  WE ARE CEPE
+                </span>
+                <p 
+                  className="text-purple-100 font-medium opacity-85 mt-1"
+                  style={{ fontSize: '14px', fontStyle: 'italic' }}
+                >
+                  Pessoas incríveis que fazem tudo acontecer!
+                </p>
+              </div>
+
+              {/* Image Frame with Slate/Dark borders */}
+              <div className="relative border-4 border-slate-950 rounded-2xl overflow-hidden bg-slate-900 shadow-inner flex items-center justify-center max-h-[70vh]">
+                <img 
+                  id="equipe-zoom-img"
+                  src="/assets/images/EQUIPE.png"
+                  alt="Foto da Equipe CEPE"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const currentSrc = e.currentTarget.src;
+                    if (currentSrc.includes('/assets/images/')) {
+                      e.currentTarget.src = '/EQUIPE.png';
+                    }
+                  }}
+                  className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg"
+                />
+              </div>
+
+              {/* Extra action bar */}
+              <div className="flex justify-center items-center mt-4">
+                <button
+                  onClick={async () => {
+                    try {
+                      const imgEl = document.getElementById('equipe-zoom-img') as HTMLImageElement | null;
+                      const downloadUrl = imgEl ? imgEl.src : '/assets/images/EQUIPE.png';
+                      
+                      const response = await fetch(downloadUrl);
+                      const blob = await response.blob();
+                      const blobUrl = window.URL.createObjectURL(blob);
+                      
+                      const link = document.createElement('a');
+                      link.href = blobUrl;
+                      link.download = `equipe-cepe.png`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      window.URL.revokeObjectURL(blobUrl);
+                    } catch (error) {
+                      console.error('Failed to download image', error);
+                      // Fallback to direct link download if fetch fails
+                      const link = document.createElement('a');
+                      link.href = '/assets/images/EQUIPE.png';
+                      link.download = `equipe-cepe.png`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }
+                  }}
+                  className="bg-[#24a044] hover:bg-[#1a8535] text-white px-6 py-2.5 rounded-full font-extrabold uppercase tracking-wider text-xs border-4 border-slate-950 shadow-[4px_4px_0_rgba(15,10,25,1)] hover:shadow-[2px_2px_0_rgba(15,10,25,1)] active:translate-y-0.5 transition-all duration-150 cursor-pointer flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Baixar Foto
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
         </div>
 
         {/* Right Arrow Button (StickerBench styling, completely outside / visible) */}
         <button
           onClick={() => {
-            if (currentPageIndex < 6) {
+            if (currentPageIndex < 38) {
               playPageFlip();
               onPageIndexChange(currentPageIndex + 1);
             } else {
@@ -1520,7 +1759,7 @@ export default function AlbumInside({
             height: '36px',
             padding: '0px',
           }}
-          aria-label={currentPageIndex < 6 ? "Ir para Próxima Página" : "Ir para a Escalação"}
+          aria-label={currentPageIndex < 38 ? "Ir para Próxima Página" : "Ir para a Escalação"}
         >
           <ChevronRight className="w-5 h-5 stroke-[3.5] text-white" />
         </button>
@@ -1530,19 +1769,58 @@ export default function AlbumInside({
       <div className="flex justify-center items-center max-w-5xl mx-auto w-full px-2 sm:px-16 print:hidden font-sans py-2">
         <div
           style={{ 
-            backgroundColor: (currentPageIndex === 6) ? '#cca800' : (currentPageIndex >= 3) ? '#db2777' : '#7833a9',
+            backgroundColor: (currentPageIndex === 38) ? '#10b981' : (currentPageIndex >= 36) ? '#cca800' : (currentPageIndex >= 18) ? '#db2777' : '#7833a9',
             borderWidth: '2px',
             borderColor: '#000000',
             borderStyle: 'solid',
-            fontSize: '10px',
+            fontSize: '11px',
             lineHeight: '14px',
             width: '220px'
           }}
-          className="px-6 py-2.5 rounded-full text-white font-black shadow-[3px_3px_0_rgba(0,0,0,1)] uppercase tracking-widest text-center select-none"
+          className="px-6 py-2.5 rounded-full text-white font-black shadow-[3px_3px_0_rgba(0,0,0,1)] tracking-wide text-center select-none"
         >
-          PÁGINA {currentPageIndex + 1} - {getPageTitleLabel(currentPageIndex)}
+          {(() => {
+            if (currentPageIndex >= 0 && currentPageIndex <= 17) {
+              return `Pág ${currentPageIndex + 1} - Convocados`;
+            }
+            if (currentPageIndex >= 18 && currentPageIndex <= 35) {
+              return `Pág ${currentPageIndex - 17} - Especiais`;
+            }
+            if (currentPageIndex >= 36 && currentPageIndex <= 37) {
+              return `Pág ${currentPageIndex - 35} - The Legends`;
+            }
+            return `Pág 1 - Extra`;
+          })()}
         </div>
       </div>
+
+      {autoGlueCount !== null && (
+        <div className="fixed inset-0 bg-black/45 z-[350] flex items-center justify-center p-4 pointer-events-none animate-fade-in print:hidden">
+          <div 
+            style={{ backgroundColor: '#000000', color: '#ffffff' }}
+            className="border-4 border-slate-950 rounded-full px-6 py-3.5 shadow-[5px_5px_0_rgba(0,0,0,1)] flex items-center justify-center gap-3.5 pointer-events-auto max-w-[95vw] sm:max-w-md animate-scale-in"
+          >
+            <span 
+              style={{ backgroundColor: '#7b2e98', color: '#ffffff' }}
+              className="text-[10px] font-black uppercase px-3 py-1.5 rounded-full select-none shadow border-2 border-slate-950 tracking-wider shrink-0"
+            >
+              AUTO-TÁTICO
+            </span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-white">
+              {autoGlueCount > 0 
+                ? `${autoGlueCount} figurinhas coladas!` 
+                : "Nenhuma figurinha nova para colar!"}
+            </span>
+            <button 
+              onClick={() => setAutoGlueCount(null)}
+              className="text-slate-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10 shrink-0 cursor-pointer flex items-center justify-center"
+              aria-label="Fechar"
+            >
+              <X className="w-4 h-4 stroke-[3px]" />
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -124,7 +124,7 @@ export default function EntryPage({
             }}
             className="text-slate-950 font-black rounded-full border-4 border-slate-950 shadow-[6px_6px_0_rgba(15,10,25,0.95)] md:rotate-[-2deg] tracking-widest uppercase select-none max-w-full"
           >
-            Álbum oficial • Bora Brasil CEPE
+            Álbum • Bora Brasil CEPE
           </div>
         </div>
 

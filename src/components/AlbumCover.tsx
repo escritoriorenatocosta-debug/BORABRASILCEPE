@@ -124,7 +124,7 @@ export default function AlbumCover({
             style={{ backgroundColor: '#39cb29', marginTop: '19px' }}
             className="inline-flex items-center gap-2 text-slate-950 font-black px-8 py-2.5 rounded-full border-2 border-slate-950 shadow-[4px_4px_0_rgba(15,10,25,0.95)] text-sm sm:text-base rotate-[-3deg] tracking-wider uppercase"
           >
-            ÁLBUM OFICIAL 2026
+            ÁLBUM 2026
           </div>
 
           {/* Modern flat action button - centered in the middle of the cover */}

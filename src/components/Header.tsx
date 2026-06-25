@@ -8,7 +8,7 @@ import { Volume2, VolumeX, RotateCcw, Settings, X, Play, Upload, Download, Chevr
 import { isSoundEnabled, setSoundEnabled, playSuccess } from '../audio';
 import DefaultTitleLogo from './DefaultTitleLogo';
 
-const defaultLogo = '/src/assets/images/regenerated_image_1779654679664.png';
+const defaultLogo = '/assets/images/regenerated_image_1779654679664.png';
 
 interface HeaderProps {
   isHeaderVisible: boolean;
@@ -54,7 +54,29 @@ export default function Header({
   const [showConfirmReset, setShowConfirmReset] = React.useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [importStatus, setImportStatus] = React.useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
   const percentage = Math.round((gluedCount / totalCount) * 100) || 0;
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = () => {
+    try {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+      playSuccess();
+    } catch (_) {}
+  };
 
   const closeSettings = () => {
     setIsSettingsOpen(false);
@@ -263,15 +285,14 @@ export default function Header({
     <>
       <header className={`w-full flex flex-col font-sans select-none shadow-md transition-all duration-500 overflow-hidden ${isHeaderVisible ? 'max-h-[220px]' : 'max-h-0'}`}>
         <div 
-          className="w-full flex items-center justify-between px-4 md:px-8 py-2 relative"
+          className="w-full h-[110px] sm:h-[150px] flex items-center justify-between px-3 sm:px-4 md:px-8 py-2 relative"
           style={{
             backgroundColor: '#046a00',
             backgroundImage: headerBgImage 
               ? `linear-gradient(rgba(4, 106, 0, 0.35), rgba(4, 106, 0, 0.65)), url(${headerBgImage})`
-              : "linear-gradient(rgba(4, 106, 0, 0.35), rgba(4, 106, 0, 0.65)), url('/src/assets/images/CAPA_CAB.png')",
+              : "linear-gradient(rgba(4, 106, 0, 0.35), rgba(4, 106, 0, 0.65)), url('/assets/images/CAPA_CAB.png')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            height: '150px',
             borderStyle: 'solid',
             borderWidth: '8px',
             borderRadius: '20px',
@@ -282,11 +303,8 @@ export default function Header({
             <img
               src={brandImage || defaultLogo}
               alt="Logo"
-              className="object-contain w-auto border-x border-b p-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)] rounded-b-xl transition-transform hover:scale-105"
+              className="object-contain w-[65px] sm:w-[95px] h-[85px] sm:h-[120px] mt-[-15px] sm:mt-[-30px] border-x border-b p-1 sm:p-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)] rounded-b-xl transition-transform hover:scale-105"
               style={{
-                height: '120px',
-                width: '95px',
-                marginTop: '-30px',
                 marginLeft: '0px',
                 marginRight: '0px',
                 marginBottom: '0px',
@@ -299,9 +317,9 @@ export default function Header({
           </div>
 
           <div 
-            className="flex-1 flex justify-center items-center z-10 px-4 min-h-[96px]"
+            className="hidden md:flex flex-1 justify-center items-center z-10 px-4 min-h-[96px]"
             style={{
-              backgroundImage: "url('/src/assets/images/regenerated_image_1779729176882.png')",
+              backgroundImage: "url('/assets/images/regenerated_image_1779729176882.png')",
               backgroundSize: 'contain',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
@@ -311,21 +329,21 @@ export default function Header({
             }}
           />
 
-          <div className="flex items-center gap-2 z-20 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 z-20 shrink-0">
             {/* Background Music ON / OFF Control Button Pill */}
-            <div className="flex items-center bg-black rounded-full border border-white/30 overflow-hidden text-[10px] md:text-xs font-bold uppercase tracking-wider" style={{ backgroundColor: '#000000' }}>
+            <div className="flex items-center bg-black rounded-full border border-white/30 overflow-hidden text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider" style={{ backgroundColor: '#000000' }}>
               <button
                 onClick={() => onToggleMusic && onToggleMusic(true)}
-                className={`px-2 md:px-3 py-1.5 flex items-center gap-1 cursor-pointer transition-all ${musicOn ? 'bg-[#FFDF1B] text-slate-950 font-black' : 'bg-transparent text-white hover:bg-white/10'}`}
+                className={`px-1.5 sm:px-2.5 md:px-3 py-1 sm:py-1.5 flex items-center gap-0.5 sm:gap-1 cursor-pointer transition-all ${musicOn ? 'bg-[#FFDF1B] text-slate-950 font-black' : 'bg-transparent text-white hover:bg-white/10'}`}
                 title="Ativar música de fundo"
               >
-                <Music className={`w-3 h-3 ${musicOn ? 'animate-pulse' : ''}`} />
+                <Music className={`w-2.5 sm:w-3 h-2.5 sm:h-3 ${musicOn ? 'animate-pulse' : ''}`} />
                 <span>ON</span>
               </button>
               <div className="w-[1px] bg-white/20 self-stretch" />
               <button
                 onClick={() => onToggleMusic && onToggleMusic(false)}
-                className={`px-2 md:px-3 py-1.5 flex items-center gap-1 cursor-pointer transition-all ${!musicOn ? 'bg-red-600 text-white font-black' : 'bg-transparent text-white hover:bg-white/10'}`}
+                className={`px-1.5 sm:px-2.5 md:px-3 py-1 sm:py-1.5 flex items-center gap-0.5 sm:gap-1 cursor-pointer transition-all ${!musicOn ? 'bg-red-600 text-white font-black' : 'bg-transparent text-white hover:bg-white/10'}`}
                 title="Desativar música de fundo"
               >
                 <span>OFF</span>
@@ -338,20 +356,20 @@ export default function Header({
                 setSoundEnabled(next);
                 onToggleSound(next);
               }}
-              className="px-3 py-1.5 bg-transparent hover:bg-white/10 text-white border border-white/30 hover:border-white rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer flex items-center gap-1.5"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 bg-transparent hover:bg-white/10 text-white border border-white/30 hover:border-white rounded-full text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer flex items-center gap-1"
               style={{ backgroundColor: '#000000' }}
               title={soundOn ? "Mudar para mudo" : "Ativar efeitos sonoros"}
             >
-              {soundOn ? <Volume2 className="w-3 md:w-3.5 h-3 md:h-3.5" /> : <VolumeX className="w-3 md:w-3.5 h-3 md:h-3.5" />}
+              {soundOn ? <Volume2 className="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5" /> : <VolumeX className="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5" />}
               <span className="hidden sm:inline">{soundOn ? "SOM ATIVO" : "MUDO"}</span>
             </button>
 
             {showConfirmReset ? (
               <div 
                 style={{ borderWidth: '2px', borderColor: '#ff0ffb' }}
-                className="flex items-center gap-1 bg-[#e21b3c]/20 px-1 py-0.5 rounded-full border border-[#e21b3c] animate-fade-in"
+                className="flex items-center gap-0.5 sm:gap-1 bg-[#e21b3c]/20 px-1 py-0.5 rounded-full border border-[#e21b3c] animate-fade-in"
               >
-                <span className="text-[8px] md:text-[9.5px] text-white font-extrabold uppercase px-1.5 select-none">
+                <span className="text-[7.5px] sm:text-[8px] md:text-[9.5px] text-white font-extrabold uppercase px-1 sm:px-1.5 select-none">
                   ZERAR?
                 </span>
                 <button
@@ -360,13 +378,13 @@ export default function Header({
                     setShowConfirmReset(false);
                   }}
                   style={{ backgroundColor: '#ff0ffb' }}
-                  className="px-2 py-0.5 bg-[#e21b3c] hover:bg-red-700 text-white font-black text-[8px] uppercase rounded-full transition-all active:scale-95 cursor-pointer"
+                  className="px-1.5 sm:px-2 py-0.5 bg-[#e21b3c] hover:bg-red-700 text-white font-black text-[7.5px] sm:text-[8px] uppercase rounded-full transition-all active:scale-95 cursor-pointer"
                 >
                   SIM
                 </button>
                 <button
                   onClick={() => setShowConfirmReset(false)}
-                  className="px-2 py-0.5 bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-[8px] uppercase rounded-full transition-all active:scale-95 cursor-pointer"
+                  className="px-1.5 sm:px-2 py-0.5 bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-[7.5px] sm:text-[8px] uppercase rounded-full transition-all active:scale-95 cursor-pointer"
                 >
                   NÃO
                 </button>
@@ -374,11 +392,11 @@ export default function Header({
             ) : (
               <button
                 onClick={() => setShowConfirmReset(true)}
-                className="px-3 py-1.5 bg-transparent hover:bg-white/10 text-white border border-white/30 hover:border-white rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer flex items-center gap-1.5"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 bg-transparent hover:bg-white/10 text-white border border-white/30 hover:border-white rounded-full text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer flex items-center gap-1"
                 style={{ backgroundColor: '#a900b3' }}
                 title="Reiniciar Álbum"
               >
-                <RotateCcw className="w-3 md:w-3.5 h-3 md:h-3.5" />
+                <RotateCcw className="w-2.5 sm:w-3 md:w-3.5 h-2.5 sm:h-3 md:h-3.5" />
                 <span className="hidden sm:inline">RECOMEÇAR</span>
               </button>
             )}
@@ -397,9 +415,9 @@ export default function Header({
           }}
         >
           <div className="w-full flex flex-row items-center justify-between max-w-7xl mx-auto px-4 md:px-8 z-10 gap-4">
-            <div className="flex items-center gap-2 pl-[85px] md:pl-[120px] select-none">
+            <div className="flex items-center gap-2 pl-[60px] sm:pl-[85px] md:pl-[120px] select-none">
               <img 
-                src="/src/assets/images/regenerated_image_1779729548221.png" 
+                src="/assets/images/regenerated_image_1779729548221.png" 
                 alt="Marca" 
                 className="h-5 sm:h-6 md:h-7 w-auto object-contain transition-all duration-300 hover:scale-105"
               />
@@ -471,7 +489,7 @@ export default function Header({
                   <div className="flex items-center gap-2.5">
                     <div className="relative">
                       <img
-                        src={titleImage || '/src/assets/images/regenerated_image_1779727658462.png'}
+                        src={titleImage || '/assets/images/regenerated_image_1779727658462.png'}
                         alt="Título Principal"
                         className="h-10 w-auto max-w-[80px] object-contain rounded bg-white p-1 border border-slate-950 shadow-sm"
                       />
@@ -719,6 +737,35 @@ export default function Header({
                     </label>
                   </div>
                 </div>
+              </div>
+
+              {/* Fullscreen & Mobile App Installation Instructions (PWA) */}
+              <div className="bg-slate-950/70 p-4 rounded-2xl border-2 border-slate-900 hover:border-slate-800 transition-all text-left space-y-3">
+                <span className="text-[10px] text-[#FFDF1B] font-black uppercase tracking-wider block">
+                  💡 Modo Tela Cheia & Aplicativo no Celular
+                </span>
+                <p className="text-[9px] text-slate-300 font-medium leading-relaxed">
+                  Para esconder as barras do navegador no celular e jogar em tela cheia total igual a um aplicativo instalado:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[8.5px] leading-relaxed text-slate-450">
+                  <div className="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                    <span className="font-extrabold text-[#FFDF1B] block uppercase text-[7px] mb-1">Android (Chrome)</span>
+                    Toque nos <span className="font-bold text-white">três pontinhos ⋮</span> no topo direito e escolha <span className="font-bold text-white">"Adicionar à tela de início"</span> ou <span className="font-bold text-white">"Instalar aplicativo"</span>.
+                  </div>
+                  <div className="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                    <span className="font-extrabold text-[#FFDF1B] block uppercase text-[7px] mb-1">iPhone / iOS (Safari)</span>
+                    Toque no botão de <span className="font-bold text-white">Compartilhar 📤</span> e selecione a opção <span className="font-bold text-white">"Adicionar à Tela de Início"</span>.
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleToggleFullscreen}
+                  style={{ backgroundColor: isFullscreen ? '#551571' : '#046a00' }}
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 hover:opacity-90 text-white font-black text-[10px] uppercase tracking-wider rounded-full cursor-pointer transition-all active:scale-95 border-2 border-slate-950 shadow-[2px_2px_0_rgba(0,0,0,1)]"
+                >
+                  {isFullscreen ? '📺 Sair da Tela Cheia' : '✨ Entrar em Tela Cheia'}
+                </button>
               </div>
             </div>
 

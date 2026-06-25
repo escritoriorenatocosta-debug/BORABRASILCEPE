@@ -211,7 +211,7 @@ export default function AlbumBack({
       const stored = localStorage.getItem('cepe_dream_team_coach_id_v2');
       if (stored) {
         const parsed = parseInt(stored, 10);
-        if (parsed >= 37 && parsed <= 48) return parsed;
+        if ((parsed >= 37 && parsed <= 48) || (parsed >= 301 && parsed <= 312)) return parsed;
       }
     } catch (_) {}
     return null;
@@ -433,7 +433,7 @@ export default function AlbumBack({
   const filledCount = Object.values(lineup).filter(id => id !== null).length;
 
   // Filter coaches
-  const legendCoaches = STICKERS.filter(s => s.id >= 37 && s.id <= 48);
+  const legendCoaches = STICKERS.filter(s => (s.id >= 37 && s.id <= 48) || (s.id >= 301 && s.id <= 312));
   const filteredCoaches = legendCoaches.filter(c => 
     c.name.toLowerCase().includes(coachSearchTerm.toLowerCase()) ||
     c.role.toLowerCase().includes(coachSearchTerm.toLowerCase())
@@ -1036,7 +1036,15 @@ export default function AlbumBack({
                 <div className="flex items-center justify-between border-b border-emerald-500/25 pb-2 mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-yellow-400 font-black text-xs uppercase tracking-wider">Escalação Oficial</span>
-                    <span style={{ backgroundColor: '#72a33d' }} className="text-white text-[9.5px] px-2.5 py-0.5 rounded-full font-black uppercase">
+                    <span 
+                      style={{ 
+                        backgroundColor: '#72a33d',
+                        paddingRight: '10px',
+                        paddingBottom: '4px',
+                        paddingTop: '4px'
+                      }} 
+                      className="text-white text-[9.5px] px-2.5 py-0.5 rounded-full font-black uppercase"
+                    >
                       Esquema {formation.split('').join('-')}
                     </span>
                   </div>
@@ -1060,7 +1068,14 @@ export default function AlbumBack({
                         <span className="text-[9px] font-mono text-emerald-400 font-black uppercase min-w-[24px]">
                           {pos.role}:
                         </span>
-                        <span className={`text-[10.5px] font-black uppercase tracking-tight truncate ${sticker ? 'text-yellow-300' : 'text-emerald-300/30'}`}>
+                        <span 
+                          style={{
+                            marginTop: '0px',
+                            paddingTop: '0px',
+                            paddingBottom: '10px'
+                          }}
+                          className={`text-[10.5px] font-black uppercase tracking-tight truncate ${sticker ? 'text-yellow-300' : 'text-emerald-300/30'}`}
+                        >
                           {sticker ? sticker.name : "Vazio"}
                         </span>
                       </div>

@@ -8,6 +8,8 @@ import { Sticker } from '../types';
 import { Sparkles, HelpCircle } from 'lucide-react';
 import { SLOTS } from '../data';
 
+const isMinicraque = (id: number) => (id >= 101 && id <= 136) || (id >= 149 && id <= 196) || (id >= 501 && id <= 596) || (id >= 701 && id <= 742);
+
 interface StickerItemProps {
   sticker: Sticker;
   size?: 'sm' | 'md' | 'lg';
@@ -31,7 +33,7 @@ export default function StickerItem({
 
   // Helper to obtain beautiful clean physical soccer position
   const displayPosition = (() => {
-    if (sticker.id >= 101 && sticker.id <= 136) {
+    if (isMinicraque(sticker.id)) {
       return `Nº ${sticker.id - 100}`;
     }
 
@@ -57,7 +59,7 @@ export default function StickerItem({
   // Helper to render customized visual SVG avatar representing the real players
   const renderSvgAvatar = (id: number) => {
     // Standard stickers 1 to 48 and minicraques 101 to 136 use base player models 1 to 12
-    const resolvedId = (id >= 101 && id <= 136) ? (id - 100) : id;
+    const resolvedId = isMinicraque(id) ? (id - 100) : id;
     const baseId = resolvedId <= 48 ? ((resolvedId - 1) % 12) + 1 : resolvedId;
 
     // Custom facial features matching the attached photos of the team
@@ -403,12 +405,12 @@ export default function StickerItem({
           <img
             src={(() => {
               let path = sticker.imagePath;
-              if (sticker.id >= 101 && sticker.id <= 136) {
+              if (isMinicraque(sticker.id)) {
                 if (path.includes('input_file_11.png')) {
-                  path = '/src/assets/images/minicraque(16).png';
+                  path = '/assets/images/minicraque(16).png';
                 }
               }
-              return path.startsWith('/src/assets/images/') ? path : `/src/assets/images${path}`;
+              return path.startsWith('/assets/images/') ? path : `/src/assets/images${path}`;
             })()}
             alt={sticker.name}
             referrerPolicy="no-referrer"
@@ -416,8 +418,8 @@ export default function StickerItem({
               const currentSrc = e.currentTarget.src;
               if (sticker.id === 3 && !currentSrc.includes('input_file_0.png')) {
                 // If Diego Maradona's specific input_file_3.png fails to load, fall back to input_file_0.png (where user uploaded it!)
-                e.currentTarget.src = '/src/assets/images/input_file_0.png';
-              } else if (currentSrc.includes('/src/assets/images/')) {
+                e.currentTarget.src = '/assets/images/input_file_0.png';
+              } else if (currentSrc.includes('/assets/images/')) {
                 // If the assets/images path failed, try the simple root path
                 const parts = sticker.imagePath.split('/');
                 const filename = parts[parts.length - 1];
@@ -438,7 +440,7 @@ export default function StickerItem({
         <div 
           style={style}
           className={`w-full h-full relative flex flex-col items-center justify-between p-[4%] font-sans overflow-hidden ${
-            sticker.id >= 101 && sticker.id <= 136
+            isMinicraque(sticker.id)
               ? 'bg-gradient-to-tr from-[#4f46e5] via-[#9333ea] to-[#db2777] border-4 border-violet-950 text-white'
               : sticker.id >= 201 
               ? 'bg-[#fbbf24] border-4 border-[#d97706] text-amber-950' 
@@ -489,7 +491,7 @@ export default function StickerItem({
           <div className="w-full flex flex-col gap-1 items-center z-10 mb-1 select-none pointer-events-none">
             {/* Name Capsule styling exactly matching Diego Maradona photo (No IDs or system codes!) */}
             <div className={`w-[94%] font-sans font-black tracking-wide uppercase text-[9px] py-1 rounded-lg text-center truncate ${
-              sticker.id >= 101 && sticker.id <= 136
+              isMinicraque(sticker.id)
                 ? 'bg-violet-950 border border-violet-800/40 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]'
                 : 'bg-emerald-900 border border-emerald-700/50 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]'
             }`}>
@@ -497,7 +499,7 @@ export default function StickerItem({
             </div>
             {/* Department Capsule */}
             <div className={`w-[82%] font-sans font-bold uppercase text-[7px] py-[1.5px] rounded-full text-center truncate ${
-              sticker.id >= 101 && sticker.id <= 136
+              isMinicraque(sticker.id)
                 ? 'bg-pink-850 border border-pink-700/60 text-pink-100'
                 : 'bg-[#0d6b55] border border-[#09503e] text-[#bbf7d0]'
             }`}>

@@ -69,8 +69,8 @@ const WORLD_SOCCER_QUESTIONS: QuizQuestion[] = [
   {
     id: 9,
     question: "Quem é o maior artilheiro da história das Copas do Mundo de futebol masculino?",
-    options: ["Ronaldo Fenômeno", "Pelé", "Miroslav Klose"],
-    correct: "Miroslav Klose"
+    options: ["Ronaldo Fenômeno", "Lionel Messi", "Miroslav Klose"],
+    correct: "Lionel Messi"
   },
   {
     id: 10,
@@ -745,18 +745,21 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
 
     const selected: { sticker: Sticker; flipped: boolean }[] = [];
 
-    // Separate normal (1-36) and legendary (37-48) stickers
-    const ungluedNormal = STICKERS.filter(s => s.id >= 1 && s.id <= 36 && !gluedStickerIds.includes(s.id));
-    const ungluedLegendary = STICKERS.filter(s => s.id >= 37 && s.id <= 48 && !gluedStickerIds.includes(s.id));
+    // Separate normal and legendary stickers, incorporating the newly expanded card registers
+    const isNormal = (s: Sticker) => (s.id >= 1 && s.id <= 36) || (s.id >= 49 && s.id <= 96) || (s.id >= 401 && s.id <= 496) || (s.id >= 601 && s.id <= 636) || (s.id >= 737 && s.id <= 739);
+    const isLegendary = (s: Sticker) => (s.id >= 37 && s.id <= 48) || (s.id >= 301 && s.id <= 312);
 
-    const allNormal = STICKERS.filter(s => s.id >= 1 && s.id <= 36);
-    const allLegendary = STICKERS.filter(s => s.id >= 37 && s.id <= 48);
+    const ungluedNormal = STICKERS.filter(s => isNormal(s) && !gluedStickerIds.includes(s.id));
+    const ungluedLegendary = STICKERS.filter(s => isLegendary(s) && !gluedStickerIds.includes(s.id));
+
+    const allNormal = STICKERS.filter(s => isNormal(s));
+    const allLegendary = STICKERS.filter(s => isLegendary(s));
 
     // Sugerimos uma chance de 10% para cada figurinha ser Lendária (id 37 a 48),
     // reduzindo de cerca de ~25% original (12 em 48) para 10%.
     const LEGENDARY_DROP_RATE = 0.10;
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       let chosen: Sticker;
 
       // Decide se a figurinha será Lendária ou Padrão neste espaço (slot)
@@ -787,6 +790,30 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
 
     setRevealedPack(selected);
     setPackState('revealing');
+
+    // Revela todas as figurinhas automaticamente em sequência (staggered delay de 350ms)
+    selected.forEach((_, index) => {
+      setTimeout(() => {
+        setRevealedPack(current => {
+          if (current.length <= index) return current;
+          const updated = [...current];
+          if (!updated[index].flipped) {
+            updated[index] = { ...updated[index], flipped: true };
+            playPeel();
+            
+            // Se todas foram reveladas, toca o som de sucesso caso contenha a figurinha 12
+            const allFlippedNow = updated.every(c => c.flipped);
+            if (allFlippedNow) {
+              const hasSpecial = updated.some(c => c.sticker.id === 12);
+              if (hasSpecial) {
+                setTimeout(() => playSuccess(), 200);
+              }
+            }
+          }
+          return updated;
+        });
+      }, (index + 1) * 350);
+    });
   };
 
   // Flip an individual card during reveal
@@ -824,7 +851,7 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
       {/* Title */}
       <h3 className="text-xl font-sans text-center tracking-wider uppercase mb-1 z-10 flex flex-col items-center gap-1 justify-center">
         <img 
-          src="/src/assets/images/ABRIR.png" 
+          src="/assets/images/ABRIR.png" 
           alt="OBTER" 
           style={{ height: '64px', display: 'block' }} 
           className="object-contain select-none"
@@ -833,7 +860,7 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
         <span className="text-white text-base font-bold" style={{ fontFamily: 'system-ui' }}>NOVAS FIGURINHAS</span>
       </h3>
       <p className="text-xs text-slate-300 text-center mb-6 max-w-sm z-10 font-sans">
-        Cada pacotinho contém <span className="font-black" style={{ color: '#ff8400' }}>3 figurinhas surpresas</span>. Se conseguir repetidas, guarde-as na sua bancada!
+        Cada pacotinho contém <span className="font-black" style={{ color: '#ff8400' }}>5 figurinhas surpresas</span>. Se conseguir repetidas, guarde-as na sua bancada!
       </p>
 
       {/* Packet Container */}
@@ -958,7 +985,7 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                   
                   {/* Card Background Image */}
                   <img
-                    src="/src/assets/images/regenerated_image_1779582570227.png"
+                    src="/assets/images/regenerated_image_1779582570227.png"
                     alt="Pacotinho Background"
                     className="absolute inset-0 w-full h-full object-cover opacity-85 pointer-events-none z-0"
                     referrerPolicy="no-referrer"
@@ -970,27 +997,23 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                   {/* ACTIVE DRAG-TO-TEAR STRIP ZONE AT THE TOP !!! */}
                   {unlockedTear ? (
                     <div 
-                      className="absolute top-0 inset-x-0 h-16 z-30 bg-black/70 border-b-2 border-dashed border-yellow-500/30 flex items-center px-2 select-none"
+                      className="absolute top-0 inset-x-0 h-20 z-30 flex flex-col items-center select-none pt-2"
                     >
-                      {/* Dotted Tear Line */}
-                      <div className="absolute left-6 right-6 h-0.5 border-b-2 border-dashed border-red-500/70 z-10 pointer-events-none" />
-                      
-                      {/* Drag Progress highlight path */}
-                      <div 
-                        className="absolute left-2 h-1 bg-gradient-to-r from-yellow-500 to-red-500 rounded-full pointer-events-none z-20"
-                        style={{ width: `${Math.max(10, dragX + 16)}px` }}
-                      />
+                      {/* "ARRASTE PARA ABRIR" text in gold with neon glow */}
+                      <span className="text-[10px] font-black tracking-widest text-[#FFDF1B] uppercase drop-shadow-[0_0_5px_rgba(255,223,27,0.8)]">
+                        ARRASTE PARA ABRIR
+                      </span>
+
+                      {/* Horizontal track line representing the "tear strip" track */}
+                      <div className="relative w-[180px] h-1.5 mt-2 bg-yellow-500/20 rounded-full border border-yellow-400/20 shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] flex items-center">
+                        {/* Drag Progress highlight path */}
+                        <div 
+                          className="absolute left-0 h-1.5 bg-gradient-to-r from-[#FFDF1B] to-yellow-500 rounded-full shadow-[0_0_8px_#FFDF1B] z-20"
+                          style={{ width: `${Math.max(8, dragX + 10)}px` }}
+                        />
+                      </div>
  
-                      {/* Floating Indicator instructions */}
-                      {dragX === 0 && (
-                        <div className="absolute inset-x-0 text-center pointer-events-none z-0 animate-pulse">
-                          <span className="text-[9px] text-[#FFDF1B] font-extrabold tracking-wider uppercase">
-                            Arraste ➔ para abrir
-                          </span>
-                        </div>
-                      )}
- 
-                      {/* Draggable Tab/Zipper Knob */}
+                      {/* Draggable Tab/Zipper Knob - Neon pointer hand icon */}
                       <div 
                         onMouseDown={(e) => handleDragStart(e.clientX)}
                         onTouchStart={(e) => {
@@ -998,10 +1021,28 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                             handleDragStart(e.touches[0].clientX);
                           }
                         }}
-                        className="absolute top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gradient-to-b from-yellow-300 to-yellow-500 border-2 shadow-md flex items-center justify-center cursor-ew-resize z-30 transform hover:scale-110 active:scale-125 hover:from-yellow-200 hover:to-yellow-400 transition-transform duration-150"
-                        style={{ left: `${Math.max(2, dragX)}px`, borderColor: '#ff8400' }}
+                        className="absolute top-[21px] w-12 h-12 flex items-center justify-center cursor-ew-resize z-30 transition-transform active:scale-110"
+                        style={{ left: `${Math.max(4, dragX + 6)}px` }}
                       >
-                        <Scissors className="w-5 h-5 text-slate-950 animate-pulse" />
+                        <svg 
+                          className="w-10 h-10 filter drop-shadow-[0_0_6px_#FFDF1B] animate-pulse" 
+                          viewBox="0 0 100 100" 
+                          fill="none" 
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          {/* Swipe curved arrow indicator */}
+                          <path d="M15,42 C15,22 38,22 46,40" stroke="#FFDF1B" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="1 5" />
+                          <path d="M40,33 L47,40 L39,46" stroke="#FFDF1B" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+                          
+                          {/* Pointer Hand Body */}
+                          <path d="M25,85 C25,85 18,75 18,65 C18,55 24,52 28,52 C32,52 35,55 35,65" stroke="#FFDF1B" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="#FFDF1B" fillOpacity="0.15" />
+                          <path d="M35,60 C35,42 45,42 45,60" stroke="#FFDF1B" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="#FFDF1B" fillOpacity="0.15" />
+                          <path d="M45,63 C45,48 55,48 55,63" stroke="#FFDF1B" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="#FFDF1B" fillOpacity="0.15" />
+                          <path d="M55,65 C55,52 65,52 65,65 L65,75 C65,85 50,92 35,92 C25,92 25,85 25,85" stroke="#FFDF1B" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="#FFDF1B" fillOpacity="0.15" />
+                          
+                          {/* Diagonal pointing index finger */}
+                          <path d="M28,52 L52,24 C55,20 60,25 56,29 L35,60" stroke="#FFDF1B" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="#FFDF1B" fillOpacity="0.25" />
+                        </svg>
                       </div>
                     </div>
                   ) : (
@@ -1019,14 +1060,18 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                   {/* Standard Packet Branding removed per request */}
  
                   {/* Bottom details of the envelope package */}
-                  <div className="w-full flex flex-col items-center gap-1 mt-auto z-20 pb-4 pointer-events-none">
+                  <div className="w-full flex flex-col items-center gap-1.5 mt-auto z-20 pb-4 pointer-events-none">
                     {unlockedTear ? (
                       <div className="flex flex-col items-center animate-bounce">
-                        <span className="text-[10px] text-yellow-300 bg-black/40 px-3 py-1 rounded-full font-black tracking-widest uppercase border border-yellow-500/30">
-                          ➔ DESBLOQUEADO! ➔
-                        </span>
-                        <span className="text-[9px] text-slate-300 font-bold mt-1 shadow-sm">
-                          Arraste a tesoura no topo
+                        <div 
+                          className="px-4 py-1.5 bg-black/60 border-2 border-yellow-500/40 rounded-xl flex items-center gap-1.5 shadow-lg"
+                        >
+                          <span className="text-[10px] text-[#FFDF1B] font-black tracking-wider uppercase">
+                            ➔ DESBLOQUEADO! ➔
+                          </span>
+                        </div>
+                        <span className="text-[9px] text-white font-semibold mt-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-wide">
+                          Arraste o dedo no topo para abrir
                         </span>
                       </div>
                     ) : (
@@ -1051,8 +1096,13 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
           <div className="flex flex-col items-center justify-center w-full">
             <div className="flex justify-center items-center gap-4 sm:gap-6 md:gap-8 flex-wrap py-4">
               {revealedPack.map((packItem, idx) => {
-                // Card rotation/fan effect
-                const rotation = idx === 0 ? '-rotate-6 hover:-rotate-2' : idx === 2 ? 'rotate-6 hover:rotate-2' : 'hover:-translate-y-2';
+                // Card rotation/fan effect for 5 cards
+                const rotation = 
+                  idx === 0 ? '-rotate-12 hover:-rotate-4' : 
+                  idx === 1 ? '-rotate-6 hover:-rotate-2' : 
+                  idx === 3 ? 'rotate-6 hover:rotate-2' : 
+                  idx === 4 ? 'rotate-12 hover:rotate-4' : 
+                  'hover:-translate-y-2';
                 
                 return (
                   <div
@@ -1078,7 +1128,7 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                         >
                           {/* Background Image of the card back */}
                           <img
-                            src="/src/assets/images/regenerated_image_1779582570227.png"
+                            src="/assets/images/regenerated_image_1779582570227.png"
                             alt="Verso da Figurinha"
                             className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none z-0"
                             referrerPolicy="no-referrer"
@@ -1103,7 +1153,7 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                             className="text-[8px] animate-pulse uppercase leading-none font-extrabold tracking-wide z-20 bg-black/40 px-1.5 py-0.5 rounded"
                             style={{ color: '#ffffff' }}
                           >
-                            Clique p/ virar
+                            Revelando...
                           </span>
                         </div>
                       </div>
@@ -1134,7 +1184,7 @@ export default function PackManager({ onAddStickers, gluedStickerIds }: PackMana
                   className="text-xs animate-pulse font-extrabold px-3 py-1 rounded-full shadow-md"
                   style={{ color: '#ffffff', backgroundColor: '#ff6000' }}
                 >
-                  Revele todas as figurinhas clicando nelas!
+                  Revelando figurinhas automaticamente...
                 </span>
               ) : (
                 <button

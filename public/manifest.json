@@ -1,0 +1,33 @@
+{
+  "short_name": "CEPE Álbum",
+  "name": "Álbum de Figurinhas - Bora Brasil",
+  "description": "Um álbum de figurinhas interativo com flipbook em HTML5, efeito de abrir pacotinhos, sons imersivos e colagem magnética.",
+  "icons": [
+    {
+      "src": "/assets/images/Ativo 2.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/images/Ativo 7.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/images/Ativo 8.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/assets/images/CAPA BORA.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#240c32",
+  "theme_color": "#240c32",
+  "display": "standalone",
+  "orientation": "portrait",
+  "prefer_related_applications": false
+}

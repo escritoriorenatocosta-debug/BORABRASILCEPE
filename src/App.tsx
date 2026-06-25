@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import AlbumAchievements from './components/AlbumAchievements';
 import MiniCraques from './components/MiniCraques';
+import AlbumRanking from './components/AlbumRanking';
 import Header from './components/Header';
 import AlbumCover from './components/AlbumCover';
 import AlbumInside from './components/AlbumInside';
@@ -17,10 +18,10 @@ import EntryPage from './components/EntryPage';
 import LoadingScreen from './components/LoadingScreen';
 import IntroVideoScreen from './components/IntroVideoScreen';
 import StickerItem from './components/StickerItem';
-import { Sticker, UserSticker } from './types';
+import { Sticker, UserSticker, getPageIndexForSlotId } from './types';
 import { STICKERS } from './data';
-import { playPageFlip, setSoundEnabled, playGoalCrowd, isMusicEnabled, setMusicEnabled, startBackgroundMusic, stopBackgroundMusic } from './audio';
-import { Sparkles, Trophy, HelpCircle, Gamepad2, Info, Play, Video, X, Award } from 'lucide-react';
+import { playPageFlip, setSoundEnabled, playGoalCrowd, isMusicEnabled, setMusicEnabled, startBackgroundMusic, stopBackgroundMusic, playGlue } from './audio';
+import { Sparkles, Trophy, HelpCircle, Gamepad2, Info, Play, Video, X, Award, Save } from 'lucide-react';
 import AtivoImage from './assets/images/GOOOL.png';
 import marcaMinicraques from './assets/images/marca_MInicraques.png';
 import ResetImage from './assets/images/regenerated_image_1779716630166.png';
@@ -32,21 +33,19 @@ const getInitialRouteInfo = () => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     
-    let matched: 'entrada' | 'capa' | 'album' | 'album2' | 'album3' | 'album4' | 'album5' | 'album6' | 'album7' | 'verso' | 'ajuste' | 'conquistas' | 'minicraques' | 'bancada' | null = null;
+    let matched: string | null = null;
     if (path === '/entrada' || hash === '#/entrada') matched = 'entrada';
     else if (path === '/capa' || hash === '#/capa') matched = 'capa';
-    else if (path === '/album' || hash === '#/album') matched = 'album';
-    else if (path === '/album2' || hash === '#/album2') matched = 'album2';
-    else if (path === '/album3' || hash === '#/album3') matched = 'album3';
-    else if (path === '/album4' || hash === '#/album4') matched = 'album4';
-    else if (path === '/album5' || hash === '#/album5') matched = 'album5';
-    else if (path === '/album6' || hash === '#/album6') matched = 'album6';
-    else if (path === '/album7' || hash === '#/album7') matched = 'album7';
     else if (path === '/verso' || hash === '#/verso') matched = 'verso';
     else if (path === '/ajuste' || hash === '#/ajuste' || hash === '#ajuste') matched = 'ajuste';
     else if (path === '/conquistas' || hash === '#/conquistas') matched = 'conquistas';
     else if (path === '/minicraques' || hash === '#/minicraques') matched = 'minicraques';
     else if (path === '/bancada' || hash === '#/bancada') matched = 'bancada';
+    else if (path === '/ranking' || hash === '#/ranking') matched = 'ranking';
+    else if (path.startsWith('/album') || hash.startsWith('#/album')) {
+      const wholeStr = path.startsWith('/album') ? path : hash.replace('#', '');
+      matched = wholeStr.replace('/', ''); // e.g. "album" or "album2"
+    }
 
     if (matched === 'capa') {
       return { entered: true, currentPage: 'cover' as const, albumPageIndex: 0 };
@@ -54,26 +53,16 @@ const getInitialRouteInfo = () => {
     if (matched === 'bancada') {
       return { entered: true, currentPage: 'bancada' as const, albumPageIndex: 0 };
     }
-    if (matched === 'album') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 0 };
-    }
-    if (matched === 'album2') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 1 };
-    }
-    if (matched === 'album3') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 2 };
-    }
-    if (matched === 'album4') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 3 };
-    }
-    if (matched === 'album5') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 4 };
-    }
-    if (matched === 'album6') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 5 };
-    }
-    if (matched === 'album7') {
-      return { entered: true, currentPage: 'album' as const, albumPageIndex: 6 };
+    if (matched && matched.startsWith('album')) {
+      let pageIdx = 0;
+      if (matched !== 'album') {
+        const numStr = matched.replace('album', '');
+        const num = parseInt(numStr);
+        if (!isNaN(num)) {
+          pageIdx = num - 1;
+        }
+      }
+      return { entered: true, currentPage: 'album' as const, albumPageIndex: pageIdx };
     }
     if (matched === 'verso') {
       return { entered: true, currentPage: 'back' as const, albumPageIndex: 0 };
@@ -83,6 +72,9 @@ const getInitialRouteInfo = () => {
     }
     if (matched === 'minicraques') {
       return { entered: true, currentPage: 'minicraques' as const, albumPageIndex: 0 };
+    }
+    if (matched === 'ranking') {
+      return { entered: true, currentPage: 'ranking' as const, albumPageIndex: 0 };
     }
     if (matched === 'ajuste') {
       return { entered: true, currentPage: 'cover' as const, albumPageIndex: 0 };
@@ -96,7 +88,7 @@ const getInitialRouteInfo = () => {
 export default function App() {
   const initialRoute = getInitialRouteInfo();
   const [entered, setEntered] = useState(initialRoute.entered);
-  const [currentPage, setCurrentPage] = useState<'cover' | 'album' | 'back' | 'achievements' | 'minicraques' | 'bancada'>(initialRoute.currentPage);
+  const [currentPage, setCurrentPage] = useState<'cover' | 'album' | 'back' | 'achievements' | 'minicraques' | 'bancada' | 'ranking'>(initialRoute.currentPage);
   const [albumPageIndex, setAlbumPageIndex] = useState<number>(initialRoute.albumPageIndex);
   const [userStickers, setUserStickers] = useState<UserSticker[]>([]);
   const [draggingSticker, setDraggingSticker] = useState<Sticker | null>(null);
@@ -107,9 +99,9 @@ export default function App() {
   const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
   const [initialized, setInitialized] = useState(false);
   const [brandImage, setBrandImage] = useState<string | null>(null);
-  const [coverBgImage, setCoverBgImage] = useState<string | null>('/src/assets/images/CAPA ALBUM_novo.png');
-  const [headerBgImage, setHeaderBgImage] = useState<string | null>('/src/assets/images/CAPA_CAB.png');
-  const [titleImage, setTitleImage] = useState<string | null>('/src/assets/images/regenerated_image_1779727658462.png');
+  const [coverBgImage, setCoverBgImage] = useState<string | null>('/assets/images/CAPA ALBUM_novo.png');
+  const [headerBgImage, setHeaderBgImage] = useState<string | null>('/assets/images/CAPA_CAB.png');
+  const [titleImage, setTitleImage] = useState<string | null>('/assets/images/regenerated_image_1779727658462.png');
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/b_9_k6_3Bws');
   const [isEnteringLoading, setIsEnteringLoading] = useState(false);
@@ -160,6 +152,7 @@ export default function App() {
 
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showRulesPopup, setShowRulesPopup] = useState(false);
   const [celebrationPageName, setCelebrationPageName] = useState<'titulares' | 'reservas' | 'auxiliares' | 'minicraques' | 'verso' | null>(null);
   const [specialStickerAwarded, setSpecialStickerAwarded] = useState<Sticker | null>(null);
   const [showFullCompletionModal, setShowFullCompletionModal] = useState(false);
@@ -182,6 +175,172 @@ export default function App() {
 
   const [scrollY, setScrollY] = useState(0);
 
+  // Active player states for global Save button
+  const [activeRankName, setActiveRankName] = useState(() => {
+    try {
+      return localStorage.getItem('cepe_active_rank_name') || '';
+    } catch (_) {
+      return '';
+    }
+  });
+  const [activeRankPassword, setActiveRankPassword] = useState(() => {
+    try {
+      return localStorage.getItem('cepe_active_rank_password') || '';
+    } catch (_) {
+      return '';
+    }
+  });
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [registerNickname, setRegisterNickname] = useState('');
+  const [saveSuccessNotification, setSaveSuccessNotification] = useState<{ name: string; password: string } | null>(null);
+  const [isQuickSaveNotificationOpen, setIsQuickSaveNotificationOpen] = useState(false);
+
+  useEffect(() => {
+    const syncActivePlayer = () => {
+      try {
+        setActiveRankName(localStorage.getItem('cepe_active_rank_name') || '');
+        setActiveRankPassword(localStorage.getItem('cepe_active_rank_password') || '');
+      } catch (_) {}
+    };
+    window.addEventListener('cepe_active_player_changed', syncActivePlayer);
+    return () => window.removeEventListener('cepe_active_player_changed', syncActivePlayer);
+  }, []);
+
+  const saveProgressToRanking = (customName?: string) => {
+    const currentName = customName || localStorage.getItem('cepe_active_rank_name') || '';
+    const currentPassword = localStorage.getItem('cepe_active_rank_password') || '';
+    const UNIQUE_GLUED_COUNT = userStickers.filter(s => s.glued).length;
+
+    if (!currentName) {
+      return { success: false, reason: 'needs_registration' };
+    }
+
+    let entries: any[] = [];
+    const stored = localStorage.getItem('cepe_album_rankings_v2');
+    if (stored) {
+      try {
+        entries = JSON.parse(stored);
+      } catch (e) {
+        console.error('Error loading rankings', e);
+      }
+    }
+    if (!entries || !Array.isArray(entries) || entries.length === 0) {
+      // Use fallback default mock entries
+      entries = [
+        { name: 'SONIC_91', password: '191', score: 238, userStickers: '[]', timestamp: Date.now() - 86400000 * 3, isMock: true },
+        { name: 'RENATO_ADM', password: '333', score: 215, userStickers: '[]', timestamp: Date.now() - 86400000 * 2, isMock: true },
+        { name: 'ALEX_KIDD', password: '148', score: 185, userStickers: '[]', timestamp: Date.now() - 86400000 * 5, isMock: true },
+        { name: 'SHINOBI_16', password: '777', score: 142, userStickers: '[]', timestamp: Date.now() - 86400000 * 1, isMock: true },
+        { name: 'GOLDEN_AXE', password: '412', score: 108, userStickers: '[]', timestamp: Date.now() - 86400000 * 10, isMock: true },
+        { name: 'MASTER_BOY', password: '520', score: 55, userStickers: '[]', timestamp: Date.now() - 86400000 * 12, isMock: true },
+      ];
+    }
+
+    let password = currentPassword;
+    if (!password) {
+      const existing = entries.find(e => e.name === currentName && !e.isMock);
+      if (existing) {
+        password = existing.password;
+      } else {
+        let unique = false;
+        let attempts = 0;
+        while (!unique && attempts < 100) {
+          const num = Math.floor(Math.random() * 900) + 100;
+          const code = String(num);
+          if (!entries.some(e => e.password === code)) {
+            password = code;
+            unique = true;
+          }
+          attempts++;
+        }
+        if (!password) {
+          password = String(Math.floor(Math.random() * 900) + 100);
+        }
+      }
+    }
+
+    const newEntry = {
+      name: currentName,
+      password: password,
+      score: UNIQUE_GLUED_COUNT,
+      userStickers: JSON.stringify(userStickers),
+      timestamp: Date.now(),
+    };
+
+    const updatedEntries = entries.filter(
+      entry => !(entry.name === currentName && !entry.isMock)
+    );
+
+    const finalEntries = [...updatedEntries, newEntry].sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return b.timestamp - a.timestamp;
+    });
+
+    localStorage.setItem('cepe_album_rankings_v2', JSON.stringify(finalEntries));
+    localStorage.setItem('cepe_active_rank_name', currentName);
+    localStorage.setItem('cepe_active_rank_password', password);
+
+    // Sync with backend API
+    fetch('/api/rankings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newEntry)
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Synchronized progress with backend:', data);
+    })
+    .catch(err => {
+      console.warn('Backend sync deferred (using offline storage):', err);
+    });
+
+    window.dispatchEvent(new Event('cepe_active_player_changed'));
+
+    return { success: true, name: currentName, password: password };
+  };
+
+  const handleQuickSave = () => {
+    const res = saveProgressToRanking();
+    if (!res.success) {
+      setRegisterNickname('');
+      setIsRegisterModalOpen(true);
+      playPageFlip();
+    } else {
+      playGlue();
+      setSaveSuccessNotification({ name: res.name!, password: res.password! });
+      setIsQuickSaveNotificationOpen(true);
+      setTimeout(() => {
+        setIsQuickSaveNotificationOpen(false);
+      }, 5000);
+    }
+  };
+
+  const handleRegisterAndSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formattedName = registerNickname.trim().toUpperCase().slice(0, 15);
+    if (!formattedName) {
+      try {
+        const audioRefuse = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav');
+        audioRefuse.volume = 0.4;
+        audioRefuse.play();
+      } catch (_) {}
+      return;
+    }
+
+    const res = saveProgressToRanking(formattedName);
+    if (res.success) {
+      setIsRegisterModalOpen(false);
+      playGlue();
+      setSaveSuccessNotification({ name: res.name!, password: res.password! });
+      setIsQuickSaveNotificationOpen(true);
+      setTimeout(() => {
+        setIsQuickSaveNotificationOpen(false);
+      }, 5000);
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
@@ -192,12 +351,23 @@ export default function App() {
 
   // Manage header visibility based on current page
   useEffect(() => {
-    if (currentPage === 'album' || currentPage === 'minicraques' || currentPage === 'bancada' || currentPage === 'back') {
+    if (currentPage === 'album' || currentPage === 'minicraques' || currentPage === 'bancada' || currentPage === 'back' || currentPage === 'ranking') {
       setIsHeaderVisible(false);
     } else {
       setIsHeaderVisible(true);
     }
   }, [currentPage]);
+
+  // Open rules popup whenever entering cover page (only once per session, after entering the app)
+  useEffect(() => {
+    if (entered && currentPage === 'cover') {
+      const alreadyShown = sessionStorage.getItem('cepe_album_rules_popup_shown');
+      if (!alreadyShown) {
+        setShowRulesPopup(true);
+        sessionStorage.setItem('cepe_album_rules_popup_shown', 'true');
+      }
+    }
+  }, [entered, currentPage]);
 
   useEffect(() => {
     try {
@@ -209,24 +379,24 @@ export default function App() {
       if (storedBg && !storedBg.includes('regenerated_image_1779727658066')) {
         setCoverBgImage(storedBg);
       } else {
-        setCoverBgImage('/src/assets/images/CAPA ALBUM_novo.png');
+        setCoverBgImage('/assets/images/CAPA ALBUM_novo.png');
       }
       const storedHeaderBg = localStorage.getItem('cepe_album_header_bg');
       if (storedHeaderBg && !storedHeaderBg.includes('regenerated_image_1779727658462')) {
         setHeaderBgImage(storedHeaderBg);
       } else {
-        setHeaderBgImage('/src/assets/images/CAPA_CAB.png');
+        setHeaderBgImage('/assets/images/CAPA_CAB.png');
       }
       const storedTitle = localStorage.getItem('cepe_album_title_image_png');
       if (storedTitle) {
         if (storedTitle.includes('Ativo') || storedTitle.includes('input_file_3.png') || storedTitle.includes('regenerated_image_1779716629628')) {
           localStorage.removeItem('cepe_album_title_image_png');
-          setTitleImage('/src/assets/images/regenerated_image_1779727658462.png');
+          setTitleImage('/assets/images/regenerated_image_1779727658462.png');
         } else {
           setTitleImage(storedTitle);
         }
       } else {
-        setTitleImage('/src/assets/images/regenerated_image_1779727658462.png');
+        setTitleImage('/assets/images/regenerated_image_1779727658462.png');
       }
     } catch (_) {}
   }, []);
@@ -339,17 +509,15 @@ export default function App() {
     let targetPath = '/entrada';
     if (entered) {
       if (currentPage === 'cover') targetPath = '/capa';
-      else if (currentPage === 'album' && albumPageIndex === 0) targetPath = '/album';
-      else if (currentPage === 'album' && albumPageIndex === 1) targetPath = '/album2';
-      else if (currentPage === 'album' && albumPageIndex === 2) targetPath = '/album3';
-      else if (currentPage === 'album' && albumPageIndex === 3) targetPath = '/album4';
-      else if (currentPage === 'album' && albumPageIndex === 4) targetPath = '/album5';
-      else if (currentPage === 'album' && albumPageIndex === 5) targetPath = '/album6';
-      else if (currentPage === 'album' && albumPageIndex === 6) targetPath = '/album7';
+      else if (currentPage === 'album') {
+        if (albumPageIndex === 0) targetPath = '/album';
+        else targetPath = `/album${albumPageIndex + 1}`;
+      }
       else if (currentPage === 'back') targetPath = '/verso';
       else if (currentPage === 'achievements') targetPath = '/conquistas';
       else if (currentPage === 'minicraques') targetPath = '/minicraques';
       else if (currentPage === 'bancada') targetPath = '/bancada';
+      else if (currentPage === 'ranking') targetPath = '/ranking';
     }
 
 
@@ -456,6 +624,49 @@ export default function App() {
     });
   };
 
+  const handleStoreRepeatedInVault = () => {
+    setUserStickers(prev => {
+      const gluedIdsSet = new Set(prev.filter(u => u.status === 'glued').map(u => u.stickerId));
+      const inventoryCounts = new Map<number, number>();
+
+      return prev.map(u => {
+        // If it's not inventory, leave it as is
+        if (u.status !== 'inventory') {
+          return u;
+        }
+
+        // It is 'inventory'. Let's see if it should be vaulted.
+        const isGlued = gluedIdsSet.has(u.stickerId);
+        if (isGlued) {
+          // If it is already glued, EVERY inventory copy of it is a repeated, so it goes to vault!
+          return { ...u, status: 'vaulted' as const };
+        } else {
+          // If it's not glued, we keep the first inventory copy we see on the bench, and vault any subsequent ones.
+          const currentCount = inventoryCounts.get(u.stickerId) || 0;
+          if (currentCount === 0) {
+            inventoryCounts.set(u.stickerId, 1);
+            return u; // Keep on bench
+          } else {
+            return { ...u, status: 'vaulted' as const }; // Send extra copy to vault
+          }
+        }
+      });
+    });
+  };
+
+  const handleRetrieveFromVault = (stickerId: number) => {
+    setUserStickers(prev => {
+      // Find the first occurrence with status 'vaulted' and stickerId, and change its status to 'inventory'
+      const index = prev.findIndex(u => u.stickerId === stickerId && u.status === 'vaulted');
+      if (index !== -1) {
+        const next = [...prev];
+        next[index] = { ...next[index], status: 'inventory' as const };
+        return next;
+      }
+      return prev;
+    });
+  };
+
   const handleLineupCompletionChange = (isComplete: boolean) => {
     setIsVersoCompleted(isComplete);
   };
@@ -491,7 +702,7 @@ export default function App() {
   const handleFloatingAbrirClick = () => {
     playPageFlip();
     setIsHeaderVisible(false);
-    if (currentPage === 'back' || currentPage === 'achievements' || currentPage === 'minicraques' || currentPage === 'bancada') {
+    if (currentPage === 'back' || currentPage === 'achievements' || currentPage === 'minicraques' || currentPage === 'bancada' || currentPage === 'ranking') {
       setCurrentPage('album');
       setAlbumPageIndex(1);
     }
@@ -524,6 +735,8 @@ export default function App() {
       localStorage.setItem('cepe_celebrated_page3', 'false');
       localStorage.setItem('cepe_celebrated_page4', 'false');
       localStorage.removeItem('cepe_has_celebrated_full_completion_v1');
+      localStorage.removeItem('cepe_album_rules_popup_shown');
+      sessionStorage.removeItem('cepe_album_rules_popup_shown');
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } catch (_) {}
     setCurrentPage('cover');
@@ -717,16 +930,24 @@ export default function App() {
   }, [specialStickerAwarded]);
 
   // Derived queries
+  const isProgressSlot = (slotId?: string): boolean => {
+    if (!slotId) return false;
+    if (slotId.startsWith("BRA_")) {
+      return true;
+    }
+    return ["EXT_0", "EXT_1", "EXT_2"].includes(slotId);
+  };
+
   const gluedStickerIds = userStickers
-    .filter(u => u.status === 'glued' && u.stickerId < 201)
+    .filter(u => u.status === 'glued' && isProgressSlot(u.slotId))
     .map(u => u.stickerId);
 
   const UNIQUE_GLUED_COUNT = new Set(gluedStickerIds).size;
-  const TOTAL_STICKERS_COUNT = STICKERS.filter(s => s.id < 201).length;
+  const TOTAL_STICKERS_COUNT = 243;
 
   // Trigger full album completion celebration popup reward when percentage is 100%
   useEffect(() => {
-    if (!initialized || TOTAL_STICKERS_COUNT === 0) return;
+    if (!initialized) return;
     if (UNIQUE_GLUED_COUNT >= TOTAL_STICKERS_COUNT) {
       const alreadyAwarded = localStorage.getItem('cepe_has_celebrated_full_completion_v1') === 'true';
       if (!alreadyAwarded) {
@@ -764,6 +985,19 @@ export default function App() {
     count: benchMap.get(s.id) || 0
   }));
 
+  // Compute vaulted list with counts (only items that exist and have status 'vaulted')
+  const vaultedMap = new Map<number, number>();
+  userStickers.forEach(u => {
+    if (u.status === 'vaulted') {
+      vaultedMap.set(u.stickerId, (vaultedMap.get(u.stickerId) || 0) + 1);
+    }
+  });
+
+  const vaultedStickers = STICKERS.filter(s => ![201, 202, 203, 204, 205].includes(s.id) && vaultedMap.has(s.id)).map(s => ({
+    sticker: s,
+    count: vaultedMap.get(s.id) || 0
+  }));
+
   if (!entered) {
     return (
       <>
@@ -781,6 +1015,11 @@ export default function App() {
             onComplete={() => {
               setIsWatchingIntro(false);
               setEntered(true);
+              const alreadyShown = sessionStorage.getItem('cepe_album_rules_popup_shown');
+              if (!alreadyShown) {
+                setShowRulesPopup(true);
+                sessionStorage.setItem('cepe_album_rules_popup_shown', 'true');
+              }
             }}
           />
         ) : (
@@ -897,6 +1136,8 @@ export default function App() {
           albumPageIndex={albumPageIndex}
           setAlbumPageIndex={setAlbumPageIndex}
           userStickers={userStickers}
+          activeRankName={activeRankName}
+          onQuickSave={handleQuickSave}
         />
 
         {/* Render pages depending on Flipbook state */}
@@ -950,19 +1191,15 @@ export default function App() {
         {currentPage === 'bancada' && (
           <BancadaView
             benchStickers={benchStickers}
+            vaultedStickers={vaultedStickers}
             userStickers={userStickers}
             onGlueSticker={handleGlueSticker}
+            onStoreRepeated={handleStoreRepeatedInVault}
+            onRetrieveFromVault={handleRetrieveFromVault}
             onGoToAlbum={(sticker) => {
               playPageFlip();
               if (sticker) {
-                let targetPageIndex = 0;
-                if (sticker.id >= 37 && sticker.id <= 48) targetPageIndex = 6;
-                else if (sticker.id >= 125) targetPageIndex = 5;
-                else if (sticker.id >= 113) targetPageIndex = 4;
-                else if (sticker.id >= 101) targetPageIndex = 3;
-                else if (sticker.id >= 25) targetPageIndex = 2;
-                else if (sticker.id >= 13) targetPageIndex = 1;
-                
+                const targetPageIndex = getPageIndexForSlotId(sticker.slotId);
                 setAlbumPageIndex(targetPageIndex);
                 setSelectedStickerFromBench(sticker.id);
               }
@@ -1027,8 +1264,23 @@ export default function App() {
           />
         )}
 
+        {currentPage === 'ranking' && (
+          <AlbumRanking
+            userStickers={userStickers}
+            gluedCount={UNIQUE_GLUED_COUNT}
+            totalCount={TOTAL_STICKERS_COUNT}
+            onBack={() => {
+              playPageFlip();
+              setCurrentPage('album');
+            }}
+            onLoadProgress={(loadedStickers) => {
+              setUserStickers(loadedStickers);
+            }}
+          />
+        )}
+
         {/* Dynamic Pack Manager: Available in Cover or Album layout for rich game mechanics */}
-        {currentPage !== 'back' && currentPage !== 'achievements' && (
+        {currentPage !== 'back' && currentPage !== 'achievements' && currentPage !== 'ranking' && (
           <div className="w-full" id="pack-manager-section">
             <PackManager
               onAddStickers={handleAddStickers}
@@ -1040,14 +1292,14 @@ export default function App() {
       </main>
 
       {/* Persistent mini-credits footer */}
-      <footer style={{ backgroundColor: '#000000' }} className="py-8 text-center text-slate-950 border-t-4 border-slate-950 font-mono tracking-widest font-bold uppercase flex flex-col items-center gap-3">
+      <footer style={{ backgroundColor: '#000000', height: '250px', paddingTop: '90px' }} className="py-8 text-center text-slate-950 border-t-4 border-slate-950 font-mono tracking-widest font-bold uppercase flex flex-col items-center gap-3">
         <img
-          src={brandImage || '/src/assets/images/regenerated_image_1779654679664.png'}
+          src={brandImage || '/assets/images/regenerated_image_1779654679664.png'}
           alt="CEPE"
           className="h-12 w-auto object-contain"
           referrerPolicy="no-referrer"
         />
-        <div className="text-[10px]" style={{ color: '#ffffff', fontSize: '7px', paddingLeft: '0px', paddingBottom: '0px', fontFamily: 'monospace' }}>
+        <div className="text-[10px]" style={{ color: '#ffffff', fontSize: '7px', paddingLeft: '0px', paddingBottom: '0px', fontFamily: 'monospace', marginLeft: '0px', marginBottom: '0px', marginRight: '0px', marginTop: '40px' }}>
           BORA BRASIL ALBUM ENGINE V1.0 • CEPE EDITORA PERNAMBUCO
         </div>
       </footer>
@@ -1238,13 +1490,13 @@ export default function App() {
                {/* Header bar capsule */}
                <div className="w-full bg-white border-4 border-slate-950 rounded-[20px] px-4 py-1.5 shadow-[3px_3px_0_rgba(15,10,25,1)] flex items-center justify-between">
                  <span className="text-[#e21b3c] font-black text-xl tracking-tight uppercase">
-                   <img src={"/src/assets/images/regenerated_image_1780114641990.png"} 
+                   <img src={"/assets/images/regenerated_image_1780114641990.png"} 
                       onError={(e) => {
                         const target = e.currentTarget as HTMLImageElement;
                         if (!target.src.includes('goool_image.png')) {
-                          target.src = "/src/assets/images/goool_image.png";
+                          target.src = "/assets/images/goool_image.png";
                         } else if (target.src.includes('goool_image.png')) {
-                          target.src = "/src/assets/images/goool_image.png";
+                          target.src = "/assets/images/goool_image.png";
                         }
                       }}
                       alt="GOOOOL!!!" className="h-[50px] w-auto object-contain select-none inline-block inline-flex translate-y-0.5" referrerPolicy="no-referrer" />
@@ -1378,7 +1630,7 @@ export default function App() {
           >
             <div className="space-y-2">
               <img 
-                src="/src/assets/images/Cbranco.png" 
+                src="/assets/images/Cbranco.png" 
                 alt="GOOOL!!!" 
                 className="object-contain mx-auto drop-shadow-md"
                 style={{ height: '90px', paddingBottom: '0px', paddingTop: '0px', marginLeft: '0px', marginTop: '0px', marginBottom: '-56px', width: '900px' }}
@@ -1412,6 +1664,57 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* 📜 POP-UP FLUTUANTE DE REGRAS 📜 */}
+      {showRulesPopup && (
+        <div 
+          onClick={() => {
+            playPageFlip();
+            setShowRulesPopup(false);
+          }}
+          className="fixed inset-0 bg-[#0c0316]/90 backdrop-blur-sm z-[250] flex items-center justify-center p-4 overflow-y-auto animate-fade-in cursor-pointer select-none"
+        >
+          <div 
+            className="relative w-full max-w-xl md:max-w-2xl bg-slate-950 border-4 border-slate-950 rounded-[32px] overflow-visible shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Main content: pixel-perfect render of popup regras.png */}
+            <div className="rounded-[28px] overflow-hidden bg-[#240c32] flex justify-center items-center">
+              <img
+                src="/assets/images/popup regras.png"
+                alt="Regras do Álbum"
+                style={{
+                  marginBottom: '20px',
+                  paddingBottom: '0px',
+                  paddingRight: '0px',
+                  paddingTop: '0px',
+                  paddingLeft: '0px',
+                  marginLeft: '0px',
+                  marginRight: '0px',
+                  marginTop: '20px'
+                }}
+                className="w-full h-auto object-contain max-h-[85vh] block select-none"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+
+            {/* Grande botão de fechar no lado direito acima (círculo branco com + em preto) */}
+            <button
+              onClick={() => {
+                playPageFlip();
+                setShowRulesPopup(false);
+              }}
+              style={{ fontFamily: 'monospace', lineHeight: '1' }}
+              className="absolute -top-4 -right-4 sm:-top-5 sm:-right-5 w-12 h-12 sm:w-14 sm:h-14 bg-white text-slate-950 rounded-full border-4 border-slate-950 flex items-center justify-center font-black text-3xl sm:text-4xl cursor-pointer shadow-[3px_3px_0_rgba(0,0,0,1)] hover:scale-105 active:scale-95 transition-all z-[300]"
+              title="Fechar"
+              aria-label="Fechar Pop-up de Regras"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* FLOATING NAVIGATION PANEL ON SCROLL */}
       {entered && scrollY > 120 && (
         <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 select-none">
@@ -1452,7 +1755,7 @@ export default function App() {
               title="Obter Figurinhas / Abrir Pacote"
             >
               <img 
-                src="/src/assets/images/ABRIR2.png" 
+                src="/assets/images/ABRIR2.png" 
                 alt="Abrir Pacote" 
                 className="object-contain select-none h-7 sm:h-8 w-auto active:scale-95 transition-transform"
                 referrerPolicy="no-referrer"
@@ -1467,7 +1770,7 @@ export default function App() {
               title="Minha Bancada"
             >
               <img 
-                src="/src/assets/images/Ativo 4.png" 
+                src="/assets/images/Ativo 4.png" 
                 alt="Minha Bancada" 
                 className="object-contain select-none h-6 sm:h-7 w-auto active:scale-95 transition-transform"
                 referrerPolicy="no-referrer"
@@ -1482,6 +1785,115 @@ export default function App() {
               title="Time dos Sonhos"
             >
               <span className="font-sans font-black text-[10px] sm:text-xs tracking-wider text-white select-none">TIME</span>
+            </button>
+
+            {/* Quick Save Button in Dock */}
+            <button
+              onClick={handleQuickSave}
+              style={{ backgroundColor: '#10b981' }}
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/20 cursor-pointer transition-all active:scale-90 flex flex-col items-center justify-center hover:brightness-110 shadow-lg"
+              title="Salvar Progresso Instantaneamente no Ranking"
+            >
+              <Save className="w-4 h-4 text-white animate-pulse" />
+              <span className="text-[7.5px] text-white font-black uppercase mt-0.5 tracking-tight">SALVAR</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 💾 MODAL DE REGISTRO DE NICKNAME (QUICK SAVE) 💾 */}
+      {isRegisterModalOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[300] flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => {
+            playPageFlip();
+            setIsRegisterModalOpen(false);
+          }}
+        >
+          <div 
+            className="w-full max-w-sm bg-white text-slate-950 border-4 border-slate-950 rounded-[32px] p-6 shadow-[8px_8px_0_rgba(0,0,0,1)] animate-scale-in relative select-none"
+            onClick={(e) => e.stopPropagation()}
+            id="register-ranking-modal"
+          >
+            {/* Close button */}
+            <button
+              onClick={() => {
+                playPageFlip();
+                setIsRegisterModalOpen(false);
+              }}
+              className="absolute top-4 right-4 p-1.5 bg-slate-100 hover:bg-slate-200 border-2 border-slate-950 rounded-full text-slate-950 cursor-pointer transition-all active:scale-90"
+            >
+              <X className="w-4 h-4 stroke-[3]" />
+            </button>
+
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-slate-200">
+              <Save className="w-6 h-6 text-[#af1d92]" />
+              <h2 className="text-sm font-sans font-black uppercase tracking-wider text-slate-950">Criar Perfil de Ranking</h2>
+            </div>
+
+            <p className="text-[11px] text-slate-600 font-bold mb-4 leading-relaxed uppercase">
+              Para registrar seus <span className="text-[#af1d92] font-black">{userStickers.filter(s => s.glued).length} pontos</span> no ranking, escolha um apelido exclusivo!
+            </p>
+
+            <form onSubmit={handleRegisterAndSave} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-[10px] text-slate-700 font-black uppercase tracking-wider mb-1.5">
+                  DIGITE SEU APELIDO / NOME:
+                </label>
+                <input
+                  type="text"
+                  value={registerNickname}
+                  onChange={(e) => setRegisterNickname(e.target.value.toUpperCase())}
+                  placeholder="EX: JOGADOR..."
+                  maxLength={15}
+                  required
+                  className="w-full bg-slate-50 border-4 border-slate-950 text-slate-950 text-xs font-black uppercase p-3 rounded-xl tracking-widest outline-none focus:bg-white transition-colors placeholder:text-slate-400 shadow-inner"
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{ backgroundColor: '#ff8400' }}
+                className="w-full py-3 hover:bg-[#e06c00] text-white hover:text-white font-black text-xs uppercase tracking-widest rounded-xl cursor-pointer transition-all active:scale-95 border-4 border-slate-950 flex items-center justify-center gap-2 shadow-[4px_4px_0_rgba(0,0,0,1)] hover:shadow-none"
+              >
+                <Save className="w-4 h-4 stroke-[3px]" />
+                Registrar & Salvar Agora
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 🔔 NOTIFICAÇÃO FLUTUANTE DE SALVAMENTO COM SUCESSO 🔔 */}
+      {isQuickSaveNotificationOpen && saveSuccessNotification && (
+        <div 
+          className="fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-[200] max-w-xs w-full bg-[#10b981] text-white border-4 border-slate-950 rounded-[24px] p-4 shadow-[6px_6px_0_rgba(0,0,0,1)] animate-scale-in"
+          id="quick-save-success-toast"
+        >
+          <div className="flex items-start gap-2.5">
+            <div className="bg-white border-2 border-slate-950 text-[#10b981] rounded-full p-1.5 flex items-center justify-center shrink-0">
+              <Save className="w-4 h-4 stroke-[3px]" />
+            </div>
+            <div className="flex-1 flex flex-col select-none">
+              <span className="text-[9px] text-emerald-100 font-black uppercase tracking-widest">
+                PROGRESSO SALVO!
+              </span>
+              <span className="text-xs font-black uppercase tracking-wider text-white mt-0.5">
+                {saveSuccessNotification.name}
+              </span>
+              <span className="text-[8px] text-emerald-100 mt-1 uppercase font-bold">
+                RANKING ATUALIZADO COM SUCESSO!
+              </span>
+              <div className="mt-2 bg-slate-950/20 rounded-lg p-1.5 border border-white/10 flex items-center justify-between">
+                <span className="text-[8px] font-bold text-emerald-50 uppercase">PLAY_ID RECONECTAR:</span>
+                <span className="text-[10px] font-black tracking-widest text-yellow-300">{saveSuccessNotification.password}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsQuickSaveNotificationOpen(false)}
+              className="text-white hover:text-slate-950 p-1 rounded-full hover:bg-white/10 transition-all cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5 stroke-[3]" />
             </button>
           </div>
         </div>
