@@ -15,7 +15,7 @@ app.use(express.json({ limit: '10mb' }));
 // Initial default mocks
 const DEFAULT_MOCK_ENTRIES = [
   { name: "SONIC_91", password: "191", score: 238, userStickers: "[]", timestamp: Date.now() - 86400000 * 3, isMock: true },
-  { name: "RENATO_ADM", password: "333", score: 215, userStickers: "[]", timestamp: Date.now() - 86400000 * 2, isMock: true },
+  { name: "Mario_Bros", password: "333", score: 215, userStickers: "[]", timestamp: Date.now() - 86400000 * 2, isMock: true },
   { name: "ALEX_KIDD", password: "148", score: 185, userStickers: "[]", timestamp: Date.now() - 86400000 * 5, isMock: true },
   { name: "SHINOBI_16", password: "777", score: 142, userStickers: "[]", timestamp: Date.now() - 86400000 * 1, isMock: true },
   { name: "GOLDEN_AXE", password: "412", score: 108, userStickers: "[]", timestamp: Date.now() - 86400000 * 10, isMock: true },

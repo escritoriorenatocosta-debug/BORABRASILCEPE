@@ -20,7 +20,7 @@ import IntroVideoScreen from './components/IntroVideoScreen';
 import StickerItem from './components/StickerItem';
 import { Sticker, UserSticker, getPageIndexForSlotId } from './types';
 import { STICKERS } from './data';
-import { playPageFlip, setSoundEnabled, playGoalCrowd, isMusicEnabled, setMusicEnabled, startBackgroundMusic, stopBackgroundMusic, playGlue } from './audio';
+import { playPageFlip, setSoundEnabled, playGoalCrowd, isMusicEnabled, setMusicEnabled, startBackgroundMusic, stopBackgroundMusic, playGlue, playSuccess, playRefuse } from './audio';
 import { Sparkles, Trophy, HelpCircle, Gamepad2, Info, Play, Video, X, Award, Save } from 'lucide-react';
 import AtivoImage from './assets/images/GOOOL.png';
 import marcaMinicraques from './assets/images/marca_MInicraques.png';
@@ -163,9 +163,7 @@ export default function App() {
       setShowFullCompletionModal(true);
       console.log("🏆 [CEPE ALBUM TEST] Pop-up de premiação e conclusão final ativado via console!");
       try {
-        const victoryAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav');
-        victoryAudio.volume = 0.5;
-        victoryAudio.play();
+        playSuccess();
       } catch (_) {}
     };
     return () => {
@@ -228,7 +226,7 @@ export default function App() {
       // Use fallback default mock entries
       entries = [
         { name: 'SONIC_91', password: '191', score: 238, userStickers: '[]', timestamp: Date.now() - 86400000 * 3, isMock: true },
-        { name: 'RENATO_ADM', password: '333', score: 215, userStickers: '[]', timestamp: Date.now() - 86400000 * 2, isMock: true },
+        { name: 'Mario_Bros', password: '333', score: 215, userStickers: '[]', timestamp: Date.now() - 86400000 * 2, isMock: true },
         { name: 'ALEX_KIDD', password: '148', score: 185, userStickers: '[]', timestamp: Date.now() - 86400000 * 5, isMock: true },
         { name: 'SHINOBI_16', password: '777', score: 142, userStickers: '[]', timestamp: Date.now() - 86400000 * 1, isMock: true },
         { name: 'GOLDEN_AXE', password: '412', score: 108, userStickers: '[]', timestamp: Date.now() - 86400000 * 10, isMock: true },
@@ -322,9 +320,7 @@ export default function App() {
     const formattedName = registerNickname.trim().toUpperCase().slice(0, 15);
     if (!formattedName) {
       try {
-        const audioRefuse = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav');
-        audioRefuse.volume = 0.4;
-        audioRefuse.play();
+        playRefuse();
       } catch (_) {}
       return;
     }
@@ -964,9 +960,7 @@ export default function App() {
         
         // Success audio chime
         try {
-          const victoryAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav');
-          victoryAudio.volume = 0.5;
-          victoryAudio.play();
+          playSuccess();
         } catch (_) {}
       }
     }

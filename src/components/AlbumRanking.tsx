@@ -24,7 +24,7 @@ interface AlbumRankingProps {
 // Initial mock participants
 const DEFAULT_MOCK_ENTRIES: RankingEntry[] = [
   { name: 'SONIC_91', password: '191', score: 238, userStickers: '[]', timestamp: Date.now() - 86400000 * 3, isMock: true },
-  { name: 'RENATO_ADM', password: '333', score: 215, userStickers: '[]', timestamp: Date.now() - 86400000 * 2, isMock: true },
+  { name: 'Mario_Bros', password: '333', score: 215, userStickers: '[]', timestamp: Date.now() - 86400000 * 2, isMock: true },
   { name: 'ALEX_KIDD', password: '148', score: 185, userStickers: '[]', timestamp: Date.now() - 86400000 * 5, isMock: true },
   { name: 'SHINOBI_16', password: '777', score: 142, userStickers: '[]', timestamp: Date.now() - 86400000 * 1, isMock: true },
   { name: 'GOLDEN_AXE', password: '412', score: 108, userStickers: '[]', timestamp: Date.now() - 86400000 * 10, isMock: true },
@@ -394,15 +394,19 @@ export default function AlbumRanking({
   };
 
   // Calculations for Active Profile Card (Mockup 2)
-  const currentLevel = Math.floor(gluedCount / 25);
-  const pointsTillNext = 25 - (gluedCount % 25);
-  const levelProgressPct = ((gluedCount % 25) / 25) * 100;
+  const isFullyComplete = gluedCount >= totalCount && totalCount > 0;
+  const currentLevel = isFullyComplete ? 10 : Math.floor(gluedCount / 25);
+  const pointsTillNext = isFullyComplete ? 0 : 25 - (gluedCount % 25);
+  const levelProgressPct = isFullyComplete ? 100 : ((gluedCount % 25) / 25) * 100;
 
-  const activeRankIndex = entries.findIndex(e => e.name === activeName && !e.isMock);
+  // Filter out test/cheat profile "REI_DO_ALBUM" / ID "645" from public rankings
+  const publicEntries = entries.filter(e => e.password !== '645' && e.name !== 'REI_DO_ALBUM');
+
+  const activeRankIndex = publicEntries.findIndex(e => e.name === activeName && !e.isMock);
   const activeRankDisplay = activeRankIndex !== -1 ? `${activeRankIndex + 1}º` : '-';
 
   // Podium players
-  const sortedList = [...entries].sort((a, b) => b.score - a.score);
+  const sortedList = [...publicEntries].sort((a, b) => b.score - a.score);
   const firstPlace = sortedList[0] || { name: 'AwSle', score: 5466 };
   const secondPlace = sortedList[1] || { name: 'AwS MahDl', score: 5173 };
   const thirdPlace = sortedList[2] || { name: 'AndrSkv', score: 5172 };
@@ -459,9 +463,16 @@ export default function AlbumRanking({
 
               {/* Username & Status */}
               <div className="min-w-0">
-                <h2 className="text-lg sm:text-2xl font-black uppercase tracking-wider text-white truncate max-w-[180px] sm:max-w-none">
-                  {activeName || 'CONVIDADO'}
-                </h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg sm:text-2xl font-black uppercase tracking-wider text-white truncate max-w-[180px] sm:max-w-none">
+                    {activeName || 'CONVIDADO'}
+                  </h2>
+                  {activeName && activePassword && (
+                    <span className="text-[10px] bg-slate-800/80 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest shrink-0">
+                      ID: {activePassword}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className={`w-2 h-2 rounded-full ${activeName ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
                   <span className="text-[9px] sm:text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">
@@ -517,7 +528,9 @@ export default function AlbumRanking({
             <div className="flex flex-col sm:flex-row justify-between sm:items-center text-[8px] sm:text-[10px] text-slate-400 font-black uppercase tracking-wider mb-2 gap-1">
               <span>Nível {currentLevel}</span>
               <span className="text-right">
-                {activeName ? `${pointsTillNext} pts para o Nível ${currentLevel + 1}` : 'Crie um perfil para subir de nível'}
+                {activeName ? (
+                  isFullyComplete ? 'ÁLBUM 100% COMPLETO!' : `${pointsTillNext} pts para o Nível ${currentLevel + 1}`
+                ) : 'Crie um perfil para subir de nível'}
               </span>
             </div>
             <div className="w-full h-3 bg-slate-950 border border-slate-800 rounded-full overflow-hidden p-[2px]">
@@ -794,37 +807,13 @@ export default function AlbumRanking({
 
           {/* List of Leaderboard Rows */}
           <div className="flex flex-col max-h-[380px] overflow-y-auto bg-transparent">
-            {/* If user is active, render their highlighted state at index 0 as shown in the mockup */}
-            {activeName && (
-              <div className="bg-[#CCFF00] text-slate-950 px-3 sm:px-4 py-3 sm:py-3.5 border-b border-[#adff2f]/30 flex items-center justify-between gap-2 sm:gap-3 font-extrabold transition-all relative z-10 shadow-sm">
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <span className="font-black text-slate-950 w-5 sm:w-6 text-center text-xs sm:text-sm">
-                    0
-                  </span>
-                  <span className="text-slate-950/30">|</span>
-                  {renderPlayerAvatar(
-                    activeName,
-                    entries.find(e => e.name === activeName && !e.isMock)?.userStickers || '[]',
-                    0,
-                    "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs font-black"
-                  )}
-                  <span className="text-xs sm:text-sm font-black uppercase tracking-wide truncate max-w-[90px] min-[400px]:max-w-[150px] sm:max-w-none">
-                    {activeName}
-                  </span>
-                </div>
-                <span className="text-right text-xs sm:text-sm font-black text-slate-950">
-                  {formatScore(gluedCount)}
-                </span>
-              </div>
-            )}
-
             {/* List of other ranking participants */}
-            {entries.length === 0 ? (
+            {publicEntries.length === 0 ? (
               <div className="text-center py-8 text-slate-500 uppercase font-black text-[11px]">
                 NENHUM COMPETIDOR CADASTRADO
               </div>
             ) : (
-              entries.map((entry, idx) => {
+              publicEntries.map((entry, idx) => {
                 const rank = idx + 1;
                 const isCurrentRowActive = entry.name === activeName && !entry.isMock;
                 
@@ -854,9 +843,9 @@ export default function AlbumRanking({
                         <span className={`text-xs sm:text-sm font-black uppercase tracking-wide truncate max-w-[80px] min-[400px]:max-w-[145px] sm:max-w-none ${isCurrentRowActive ? 'text-slate-950' : 'text-white'}`}>
                           {entry.name}
                         </span>
-                        {!isCurrentRowActive && (
+                        {entry.isMock && (
                           <span className="text-[7px] sm:text-[7.5px] bg-slate-800/80 border border-slate-700 text-slate-400 px-1 sm:px-1.5 py-0.5 rounded font-bold uppercase tracking-widest shrink-0">
-                            {entry.isMock ? 'MOCK' : `ID: ${entry.password}`}
+                            MOCK
                           </span>
                         )}
                       </div>
@@ -877,9 +866,9 @@ export default function AlbumRanking({
 
       {/* Modern Compact Footer */}
       <div className="mt-8 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[9px] text-slate-500 font-extrabold tracking-widest uppercase">
-        <span>© ÁLBUM CEPE 2026</span>
-        <span className="animate-pulse text-purple-500">COLECIONE • GANHE • SUPERE!</span>
-        <span>COMPETIDORES ATIVOS: {entries.length}</span>
+        <span style={{ color: '#000000' }}>© ÁLBUM CEPE 2026</span>
+        <span className="animate-pulse" style={{ color: '#4e0856' }}>COLECIONE • GANHE • SUPERE!</span>
+        <span style={{ color: '#c4e03a' }}>COMPETIDORES ATIVOS: {publicEntries.length}</span>
       </div>
     </div>
   );
